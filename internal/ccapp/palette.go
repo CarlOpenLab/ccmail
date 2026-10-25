@@ -9,6 +9,9 @@ import (
 // paints itself, such as the floating card and its hairline.
 type palette struct {
 	Dark bool
+	// Neutral is set when the chrome accent is graphite: badges and chips
+	// stay quiet instead of turning into bright pills.
+	Neutral bool
 
 	Window   ui.Color
 	Card     ui.Color
@@ -36,7 +39,64 @@ type palette struct {
 	Shadow ui.Color
 }
 
-func paletteFor(dark bool) palette {
+// accentPreset is one choice of chrome accent. The default is graphite:
+// color comes from mail and accounts, not from the window itself.
+type accentPreset struct {
+	ID, Name    string
+	Light, Dark string
+}
+
+var accentPresets = []accentPreset{
+	{ID: "ink", Name: "石墨", Light: "#33302c", Dark: "#b6afa3"},
+	{ID: "indigo", Name: "靛蓝", Light: "#3b5bdb", Dark: "#8fa4ff"},
+	{ID: "moss", Name: "苔绿", Light: "#39664f", Dark: "#8cc7a8"},
+	{ID: "clay", Name: "陶土", Light: "#9c4f3b", Dark: "#e8a58c"},
+}
+
+func accentFor(id string, dark bool) (ui.Color, ui.Color, string) {
+	for _, a := range accentPresets {
+		if a.ID != id {
+			continue
+		}
+		if dark {
+			return ui.Hex(a.Dark), ui.Hex("#141414"), a.Dark
+		}
+		return ui.Hex(a.Light), ui.Hex("#ffffff"), a.Light
+	}
+	return accentFor("ink", dark)
+}
+
+// hexOf writes a color as #rrggbb for pages the app composes.
+func hexOf(c ui.Color) string {
+	const digits = "0123456789abcdef"
+	out := []byte("#000000")
+	for i, v := range []uint8{c.R, c.G, c.B} {
+		out[1+i*2] = digits[v>>4]
+		out[2+i*2] = digits[v&0xf]
+	}
+	return string(out)
+}
+
+func hasAccent(id string) bool {
+	for _, a := range accentPresets {
+		if a.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+// badgeColors keeps counts readable: graphite chrome uses a chip, a colored
+// accent uses the accent fill.
+func (p palette) badgeColors() (ui.Color, ui.Color) {
+	if p.Neutral {
+		return p.ChipDeep, p.Text
+	}
+	return p.Accent, p.AccentText
+}
+
+func paletteFor(dark bool, accentID string) palette {
+	accent, onAccent, _ := accentFor(accentID, dark)
 	if dark {
 		return palette{
 			Dark:     true,
@@ -47,16 +107,16 @@ func paletteFor(dark bool) palette {
 			Hover:    ui.RGBA(255, 255, 255, 0.045),
 			Chip:     ui.RGBA(255, 255, 255, 0.06),
 			ChipDeep: ui.RGBA(255, 255, 255, 0.105),
-			Selected: ui.Hex("#7b9dff").Alpha(0.18),
+			Selected: accent.Alpha(0.18),
 
 			Text:   ui.Hex("#f0f0f4"),
 			Muted:  ui.Hex("#a7a7b3"),
 			Faint:  ui.Hex("#92929e"),
 			Border: ui.RGBA(255, 255, 255, 0.075),
 
-			Accent:     ui.Hex("#7b9dff"),
-			AccentText: ui.Hex("#111114"),
-			AccentSoft: ui.Hex("#7b9dff").Alpha(0.13),
+			Accent:     accent,
+			AccentText: onAccent,
+			AccentSoft: accent.Alpha(0.13),
 			Danger:     ui.Hex("#ff6961"),
 			Success:    ui.Hex("#4fd17a"),
 			Warning:    ui.Hex("#f0a33a"),
@@ -74,16 +134,16 @@ func paletteFor(dark bool) palette {
 		Hover:    ui.RGBA(15, 18, 35, 0.035),
 		Chip:     ui.RGBA(15, 18, 35, 0.045),
 		ChipDeep: ui.RGBA(15, 18, 35, 0.075),
-		Selected: ui.Hex("#3b6cf6").Alpha(0.13),
+		Selected: accent.Alpha(0.13),
 
 		Text:   ui.Hex("#18181b"),
 		Muted:  ui.Hex("#64646e"),
 		Faint:  ui.Hex("#6b6b75"),
 		Border: ui.RGBA(15, 18, 35, 0.07),
 
-		Accent:     ui.Hex("#3b6cf6"),
-		AccentText: ui.Hex("#ffffff"),
-		AccentSoft: ui.Hex("#3b6cf6").Alpha(0.09),
+		Accent:     accent,
+		AccentText: onAccent,
+		AccentSoft: accent.Alpha(0.09),
 		Danger:     ui.Hex("#d93a35"),
 		Success:    ui.Hex("#22863a"),
 		Warning:    ui.Hex("#b57c10"),
@@ -96,9 +156,10 @@ func paletteFor(dark bool) palette {
 
 // themed sets the widget theme from the app palette and returns both: the
 // widgets (buttons, fields, lists) then match the surfaces painted here.
-func themed(c *ui.Context) (palette, *ui.Theme) {
+func themed(c *ui.Context, accentID string) (palette, *ui.Theme) {
 	base := *c.Theme()
-	p := paletteFor(base.Dark)
+	p := paletteFor(base.Dark, accentID)
+	p.Neutral = !hasAccent(accentID) || accentID == "ink"
 
 	t := base
 	t.Background = p.Window

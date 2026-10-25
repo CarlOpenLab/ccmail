@@ -117,7 +117,7 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 					sw := ui.ButtonBase(c).Size(20, 20).Radius(10).Label("颜色 " + hex)
 					sw.Background(ui.Hex(hex))
 					if strings.EqualFold(hex, acc.Color) {
-						sw.Border(2, p.Text)
+						sw.Shadow(0, 0, 0, 2, p.Text)
 					}
 					sw.OnClick(func() {
 						a.patchAccount(acc.ID, "", hex)
@@ -222,6 +222,36 @@ func (a *App) settingsAppearance(c *ui.Context, p palette) {
 		applyThemePref(a.prefs.Theme)
 		a.loadBody()
 	}
+
+	groupTitle(c, p, "强调色")
+	ui.Row(c).Gap(14).Children(func() {
+		for _, pr := range accentPresets {
+			pr := pr
+			hex := pr.Light
+			if p.Dark {
+				hex = pr.Dark
+			}
+			chip := ui.Column(c).Gap(5).AlignItems(ui.Center).Children(func() {
+				sw := ui.Box(c).Size(24, 24).Radius(12).Background(ui.Hex(hex))
+				if pr.ID == a.prefs.Accent {
+					sw.Shadow(0, 0, 0, 2, p.Text)
+				} else {
+					sw.Border(1, p.Border)
+				}
+				label := ui.Text(c, pr.Name).FontSize(11)
+				if pr.ID == a.prefs.Accent {
+					label.TextColor(p.Text)
+				} else {
+					label.TextColor(p.Faint)
+				}
+			})
+			chip.OnClick(func() {
+				a.prefs.Accent = pr.ID
+				a.savePrefs()
+				a.loadBody()
+			})
+		}
+	})
 
 	groupTitle(c, p, "窗口底色")
 	ui.Row(c).Gap(10).Children(func() {

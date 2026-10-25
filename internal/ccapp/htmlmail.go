@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/ui"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/atom"
 
@@ -196,19 +197,21 @@ func removeAttr(n *html.Node, key string) {
 
 // renderMailHTML wraps a sanitized body in the reader's document: the app's
 // typography, a readable measure, and the appearance's colors.
-func renderMailHTML(m *mailx.FullMessage, allowRemote bool) (string, int, error) {
+func renderMailHTML(m *mailx.FullMessage, allowRemote bool, accent ui.Color) (string, int, error) {
 	body, blocked, err := sanitizeEmail(m.HTML, m, allowRemote)
 	if err != nil {
 		return "", blocked, err
 	}
-	return mailDocument(body, isDarkNow()), blocked, nil
+	return mailDocument(body, isDarkNow(), accent), blocked, nil
 }
 
-func mailDocument(body string, dark bool) string {
-	fg, bg, link, quotes, codeBg := "#1d1d21", "#ffffff", "#3b5bd9", "#67677a", "#f4f5f8"
+func mailDocument(body string, dark bool, accent ui.Color) string {
+	fg, bg, quotes, codeBg := "#1d1d21", "#ffffff", "#67677a", "#f4f5f8"
 	if dark {
-		fg, bg, link, quotes, codeBg = "#ececf1", "#1d1d22", "#9fb8ff", "#a0a0ac", "#26262d"
+		fg, bg, quotes, codeBg = "#ececf1", "#1d1d22", "#a0a0ac", "#26262d"
+		accent = ui.Hex("#c9cbd2")
 	}
+	link := hexOf(accent)
 	return `<!doctype html><html><head><meta charset="utf-8"><meta name="color-scheme" content="` +
 		map[bool]string{true: "dark", false: "light"}[dark] + `"><style>
 :root { color-scheme: ` + map[bool]string{true: "dark", false: "light"}[dark] + `; }
@@ -222,7 +225,7 @@ body {
 .ccmail-pad { padding: 24px 30px 36px; max-width: 680px; margin: 0 auto; }
 img { max-width: 100% !important; height: auto !important; }
 table { max-width: 100% !important; }
-a { color: ` + link + `; }
+a { color: ` + link + `; text-decoration: underline; text-underline-offset: 2px; }
 blockquote { margin: 1em 0; padding: 2px 14px; border-left: 3px solid ` + quotes + `; color: ` + quotes + `; }
 pre { overflow-x: auto; background: ` + codeBg + `; padding: 12px 14px; border-radius: 10px; font-size: 13px; }
 </style></head><body><div class="ccmail-pad">` + body + `</div></body></html>`

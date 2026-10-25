@@ -13,7 +13,7 @@ import (
 // View builds the window: title bar, sidebar, and the card that holds the
 // message list beside the reader.
 func (a *App) View(c *ui.Context) {
-	p, _ := themed(c)
+	p, _ := themed(c, a.prefs.Accent)
 	a.drainToasts(c)
 
 	a.tickSearch()

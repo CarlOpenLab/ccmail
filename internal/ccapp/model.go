@@ -60,6 +60,7 @@ func (m *MsgRef) Key() string {
 type Prefs struct {
 	Theme         string // auto | light | dark
 	Wash          string // plain | rex | mist | meadow | dusk
+	Accent        string // ink | indigo | moss | clay
 	Density       string // cozy | compact
 	MarkRead      bool
 	Notifications bool

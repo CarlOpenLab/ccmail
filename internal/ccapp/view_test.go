@@ -49,11 +49,17 @@ func TestRenderScreens(t *testing.T) {
 	shot("settings", 1280, 800, false, func(a *App) {
 		a.openSettings(0)
 	})
+	shot("settings-appearance", 1280, 800, false, func(a *App) {
+		a.openSettings(1)
+	})
 	shot("settings-appearance-dark", 1280, 800, true, func(a *App) {
 		a.openSettings(1)
 	})
 	shot("wizard", 1280, 800, false, func(a *App) {
 		a.openWizard()
+	})
+	shot("moss-dark", 1280, 800, true, func(a *App) {
+		a.prefs.Accent = "moss"
 	})
 	shot("narrow", 900, 560, false, nil)
 	shot("phone-list", 820, 640, false, func(a *App) {

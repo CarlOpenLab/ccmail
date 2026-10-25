@@ -21,7 +21,8 @@ func (a *App) sidebar(c *ui.Context, p palette) {
 				item := ui.SidebarItem(c, "unified", iconInbox, "全部收件箱")
 				if a.unreadTotal > 0 {
 					item.Children(func() {
-						ui.Badge(c, strconv.Itoa(a.unreadTotal)).Background(p.Accent).TextColor(p.AccentText)
+						bg, fg := p.badgeColors()
+						ui.Badge(c, strconv.Itoa(a.unreadTotal)).Background(bg).TextColor(fg)
 					})
 				}
 				ui.SidebarItem(c, "flagged", iconStar, "星标邮件")
@@ -42,7 +43,8 @@ func (a *App) sidebar(c *ui.Context, p palette) {
 							item := ui.SidebarItem(c, "folder/"+acc.ID+"/"+f.Path, icon, f.Name)
 							if f.Unread > 0 {
 								item.Children(func() {
-									ui.Badge(c, strconv.Itoa(f.Unread)).Background(p.Accent).TextColor(p.AccentText)
+									bg, fg := p.badgeColors()
+									ui.Badge(c, strconv.Itoa(f.Unread)).Background(bg).TextColor(fg)
 								})
 							}
 						}
