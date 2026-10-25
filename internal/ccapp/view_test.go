@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 }
 
 // seed fills the app with the same sample data the -demo flag installs.
-func seed(a *App) { a.LoadDemoData() }
+func seed(a *App) { loadFixtures(a) }
 
 func TestRenderScreens(t *testing.T) {
 	out := os.Getenv("CCMAIL_SHOTS")
@@ -91,5 +91,7 @@ func TestRenderScreens(t *testing.T) {
 		a.rows = nil
 		a.sel = nil
 		a.msg = nil
+		a.unreadTotal = 0
+		a.total = 0
 	})
 }

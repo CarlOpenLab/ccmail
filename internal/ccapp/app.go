@@ -1,8 +1,6 @@
 package ccapp
 
 import (
-	"fmt"
-
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 )
@@ -17,14 +15,6 @@ func (a *App) ApplyStoredTheme() { applyThemePref(a.prefs.Theme) }
 func (a *App) BindWebView(wv *mygo.WebView) {
 	a.web = wv
 	a.loadBody()
-}
-
-// CaptureWeb returns a PNG of the reader's web view, for screenshots.
-func (a *App) CaptureWeb() ([]byte, error) {
-	if a.web == nil {
-		return nil, fmt.Errorf("no web view")
-	}
-	return a.web.CapturePage()
 }
 
 // Refresh loads accounts, folders and the first page of mail.

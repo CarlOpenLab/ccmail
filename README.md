@@ -15,13 +15,6 @@ go build -o ccmail .                    # Go 1.27+
 - 首次启动是空收件箱引导页，点「添加邮箱账号」挂载账号。
 - 运行数据写入当前目录 `data/`，删除即完全重置。
 
-开发时可以用样例数据看界面，不会写盘：
-
-```bash
-./ccmail -demo                          # 预置两账号、六封邮件与一封 HTML 邮件
-./ccmail -demo -capture /tmp/shots      # 抓取窗口与正文截图后退出
-```
-
 ## 添加真实邮箱
 
 | 服务商 | IMAP | SMTP | 登录凭据 |
@@ -81,7 +74,6 @@ ccmail/
 │   │   ├── htmlmail.go   HTML 清洗与正文文档
 │   │   ├── palette.go    设计令牌（明 / 暗）
 │   │   ├── icons.go      SVG 图标集
-│   │   └── demo.go       样例数据（-demo）
 │   ├── mailx/            IMAP（go-imap v2）：连接池、增量同步、解析、标记
 │   ├── smtpx/            发信（MIME 构造 + net/smtp + Sent 归档）
 │   ├── store/            账号存储（JSON + AES-256-GCM）

@@ -367,14 +367,6 @@ func (a *App) openMessage(ref *MsgRef) {
 	a.loadBody()
 
 	accountID, path, uid := ref.AccountID, ref.Path, ref.Env.UID
-	if a.demo && store.Get(accountID) == nil {
-		// sample mail never touches IMAP; every row opens the demo body
-		a.msgLoading = false
-		a.msg = demoMessage(ref, time.Now())
-		a.sel.Env.Flags.Seen = true
-		a.loadBody()
-		return
-	}
 	go func() {
 		acct := store.Get(accountID)
 		if acct == nil {

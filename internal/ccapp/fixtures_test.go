@@ -6,11 +6,9 @@ import (
 	"ccmail/internal/mailx"
 )
 
-// LoadDemoData fills the app with sample mail so the interface can be
-// previewed and screenshotted without touching a real mailbox. It never
-// writes to the store: everything lives in the app's state.
-func (a *App) LoadDemoData() {
-	a.demo = true
+// loadFixtures fills the app with sample mail for tests and screenshots. It
+// touches neither the store nor IMAP.
+func loadFixtures(a *App) {
 	a.prefs = defaultPrefs()
 	a.accounts = []*AccountVM{
 		{ID: "demo-work", Name: "工作邮箱", Email: "me@work.com", Color: "#3b6cf6", Status: "online",
@@ -77,12 +75,12 @@ func (a *App) LoadDemoData() {
 	a.rebuildRows()
 
 	a.sel = a.msgs[1]
-	a.msg = demoMessage(a.sel, now)
+	a.msg = fixtureMessage(a.sel, now)
 	a.syncListSelection()
 }
 
-// demoMessage is a rich sample body, with the shapes real newsletters use.
-func demoMessage(ref *MsgRef, now time.Time) *mailx.FullMessage {
+// fixtureMessage is a rich sample body, with the shapes real newsletters use.
+func fixtureMessage(ref *MsgRef, now time.Time) *mailx.FullMessage {
 	return &mailx.FullMessage{
 		UID:     ref.Env.UID,
 		Subject: ref.Env.Subject,

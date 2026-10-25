@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
@@ -23,8 +22,6 @@ import (
 var mainWindow *mygo.Window
 
 func main() {
-	demo := flag.Bool("demo", false, "preview the interface with sample mail; nothing is saved")
-	capture := flag.String("capture", "", "write window/reader screenshots to this directory, then exit")
 	flag.Parse()
 
 	store.EnsureDirs(".")
@@ -34,9 +31,6 @@ func main() {
 	_ = os.RemoveAll(store.DemoFiles)
 
 	app := ccapp.New()
-	if *demo {
-		app.LoadDemoData()
-	}
 	app.SubscribeToWorkers()
 	app.ApplyStoredTheme()
 
@@ -74,23 +68,8 @@ func main() {
 			{Role: mygo.RoleWindowMenu},
 		}))
 
-		if !*demo {
-			app.Refresh()
-		}
+		app.Refresh()
 		setupTray(icon.Generate(32))
-
-		if *capture != "" {
-			go func() {
-				time.Sleep(2500 * time.Millisecond)
-				if data, err := mainWindow.CapturePage(); err == nil {
-					_ = os.WriteFile(filepath.Join(*capture, "window.png"), data, 0o644)
-				}
-				if data, err := app.CaptureWeb(); err == nil {
-					_ = os.WriteFile(filepath.Join(*capture, "reader.png"), data, 0o644)
-				}
-				mygo.App.Exit(0)
-			}()
-		}
 	})
 
 	if err := mygo.App.Run(); err != nil {

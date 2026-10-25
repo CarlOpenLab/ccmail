@@ -58,7 +58,7 @@ func (a *App) listPane(c *ui.Context, p palette) {
 		c.SetTheme(&listTheme)
 		lst := ui.List(c, &a.list, len(a.rows), func(i int) {
 			a.listRow(c, p, i)
-		}).Grow(1).Padding(0, 8, 4, 8).Label("邮件列表")
+		}).Grow(1).Padding(4, 8).Gap(2).Label("邮件列表")
 		c.SetTheme(&base)
 
 		lst.Children(func() {
