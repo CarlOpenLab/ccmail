@@ -48,9 +48,18 @@ func (a *App) listPane(c *ui.Context, p palette) {
 		a.list.Header = func(i int) bool { return i >= 0 && i < len(a.rows) && a.rows[i].isHeader() }
 		a.list.Selected = &a.listSel
 
+		// The list paints its chosen row in the theme's accent. Give it the
+		// same color as our selection fill for the duration of the build so
+		// no hairline of accent shows around the row, then restore.
+		base := *c.Theme()
+		listTheme := base
+		listTheme.Accent = p.SelectedRow
+		listTheme.AccentText = p.SelectedText
+		c.SetTheme(&listTheme)
 		lst := ui.List(c, &a.list, len(a.rows), func(i int) {
 			a.listRow(c, p, i)
 		}).Grow(1).Padding(0, 8, 4, 8).Label("邮件列表")
+		c.SetTheme(&base)
 
 		lst.Children(func() {
 			if a.loading && len(a.rows) == 0 {

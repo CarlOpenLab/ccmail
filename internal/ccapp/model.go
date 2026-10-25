@@ -71,8 +71,9 @@ type Prefs struct {
 // App is the whole UI state. It is read and written on the main thread only:
 // goroutines hand their results back through update.
 type App struct {
-	win *mygo.Window
-	web *mygo.WebView
+	win  *mygo.Window
+	web  *mygo.WebView
+	demo bool
 
 	// data
 	accounts    []*AccountVM
