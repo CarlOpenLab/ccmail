@@ -113,27 +113,25 @@ func (a *App) titlebar(c *ui.Context, p palette, bar ui.TitleBar, compact, narro
 	right := bar.Right + 12
 	ui.Row(c).Height(maxFloat(bar.Height, 56)).DragWindow().Padding(0, right, 0, left).
 		Gap(10).AlignItems(ui.Center).Children(func() {
-		ui.Row(c).Width(a.sidebarW - left).Gap(8).AlignItems(ui.Center).Children(func() {
-			if narrow {
-				btn := ui.ButtonBase(c).Label("切换侧栏").Tooltip("切换侧栏 (Ctrl+B)").Size(30, 30).Radius(8).Center()
-				if btn.Hovered() {
-					btn.Background(p.ChipDeep)
-				}
-				btn.Children(func() { ui.Icon(c, iconMenu).FontSize(18).TextColor(p.Muted) })
-				btn.OnClick(func() { a.sidebarOpen = !a.sidebarOpen })
+		// left wing: the sidebar toggle on narrow windows, else just room
+		ui.Row(c).Grow(1).AlignItems(ui.Center).Children(func() {
+			if !narrow {
+				return
 			}
-			ui.Box(c).Size(26, 26).Radius(8).Center().
-				Gradient(p.Accent, p.Accent.Mix(p.Text, 0.25), 145).Children(func() {
-				ui.Icon(c, iconMail).FontSize(15).TextColor(p.AccentText)
-			})
-			ui.Text(c, "ccmail").FontSize(15.5).Bold().LetterSpacing(-0.2).TextColor(p.Text)
+			btn := ui.ButtonBase(c).Label("切换侧栏").Tooltip("切换侧栏 (⌘B)").Size(30, 30).Radius(8).Center()
+			if btn.Hovered() {
+				btn.Background(p.ChipDeep)
+			}
+			btn.Children(func() { ui.Icon(c, iconMenu).FontSize(18).TextColor(p.Muted) })
+			btn.OnClick(func() { a.sidebarOpen = !a.sidebarOpen })
 		})
 
-		ui.Row(c).Grow(1).Justify(ui.Center).Children(func() {
+		// the search field sits on the window's center line
+		ui.Row(c).Children(func() {
 			a.searchBar(c, p, compact, narrow)
 		})
 
-		ui.Row(c).Gap(4).AlignItems(ui.Center).Children(func() {
+		ui.Row(c).Grow(1).Justify(ui.End).Gap(4).AlignItems(ui.Center).Children(func() {
 			if !compact {
 				a.accountDots(c, p)
 			}
@@ -156,7 +154,6 @@ func (a *App) titlebar(c *ui.Context, p palette, bar ui.TitleBar, compact, narro
 	})
 }
 
-// iconButton is a 32x32 icon-only button with a name and a tooltip.
 func (a *App) iconButton(c *ui.Context, icon *ui.SVG, label string, p palette, onClick func()) {
 	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(32, 32).Radius(9).Center()
 	if b.Hovered() {
