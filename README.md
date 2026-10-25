@@ -2,9 +2,16 @@
 
 一个安静、专注的多账号邮件客户端。支持 Gmail、QQ 邮箱、163、126、Outlook、iCloud、企业邮箱等任意 IMAP/SMTP 服务，多账号聚合到统一收件箱。
 
+[![CI](https://github.com/CarlOpenLab/ccmail/actions/workflows/ci.yml/badge.svg)](https://github.com/CarlOpenLab/ccmail/actions/workflows/ci.yml)
+[![Release](https://github.com/CarlOpenLab/ccmail/actions/workflows/release.yml/badge.svg)](https://github.com/CarlOpenLab/ccmail/actions/workflows/release.yml)
+
+**[官网（在线介绍）](https://carlopenlab.github.io/ccmail/)** · [下载最新安装包](https://github.com/CarlOpenLab/ccmail/releases/latest)
+
 Go + [mygo](https://github.com/egoist/mygo) 桌面应用：**界面是 mygo 原生控件（`github.com/egoist/mygo/ui`）**，没有前端构建、没有页面路由；HTML 邮件正文用 mygo 的 `WebView` 内嵌渲染（系统 WebKit / WebView2）。单一二进制，凭据 AES-256-GCM 加密存储本机。
 
 ## 快速开始
+
+不想自己编译？直接从 [Releases](https://github.com/CarlOpenLab/ccmail/releases/latest) 下载 macOS / Windows / Linux 安装包。
 
 ```bash
 go build -o ccmail .                    # Go 1.27+，直接跑
