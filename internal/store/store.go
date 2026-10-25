@@ -1,5 +1,5 @@
 // Package store persists mounted accounts with AES-256-GCM encrypted
-// credentials in data/accounts.json. Wire-compatible with the Node version.
+// credentials in data/accounts.json.
 package store
 
 import (
@@ -17,7 +17,7 @@ import (
 	"sync"
 	"time"
 
-	"glossmail/internal/providers"
+	"ccmail/internal/providers"
 )
 
 // Paths holds resolved data directories.
@@ -57,8 +57,8 @@ func loadKey() cipher.AEAD {
 	return aead
 }
 
-// Encrypt seals plaintext with the local key (wire-compatible with the
-// Node version: std-base64 "iv.tag.ciphertext").
+// Encrypt seals plaintext with the local key. The wire format is
+// std-base64 "iv.tag.ciphertext".
 func Encrypt(plain string) string {
 	g := loadKey()
 	nonce := make([]byte, g.NonceSize())
@@ -76,7 +76,7 @@ func decodeB64(s string) ([]byte, error) {
 	return base64.RawStdEncoding.DecodeString(s)
 }
 
-// Decrypt opens a payload produced by Encrypt (Node or Go).
+// Decrypt opens a payload produced by Encrypt.
 func Decrypt(payload string) (string, error) {
 	parts := strings.Split(payload, ".")
 	if len(parts) != 3 {
@@ -98,13 +98,13 @@ func Decrypt(payload string) (string, error) {
 
 // Account is one mounted mailbox (real or demo).
 type Account struct {
-	ID        string          `json:"id"`
-	Type      string          `json:"type"` // "real" | "demo"
-	CreatedAt int64           `json:"createdAt"`
-	Name      string          `json:"name"`
-	Email     string          `json:"email"`
-	Color     string          `json:"color"`
-	Provider  string          `json:"provider"`
+	ID        string            `json:"id"`
+	Type      string            `json:"type"` // "real" | "demo"
+	CreatedAt int64             `json:"createdAt"`
+	Name      string            `json:"name"`
+	Email     string            `json:"email"`
+	Color     string            `json:"color"`
+	Provider  string            `json:"provider"`
 	IMAP      *providers.Server `json:"imap"`
 	SMTP      *providers.Server `json:"smtp"`
 	Auth      struct {

@@ -1,6 +1,6 @@
 // Package mailx implements the IMAP access layer: pooled per-account
 // connections, envelope sync with on-disk cache, full-message parsing
-// and flag/move operations. Cache layout matches the Node version.
+// and flag/move operations. Cache layout is stable across releases.
 package mailx
 
 import (
@@ -14,7 +14,7 @@ import (
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
 
-	"glossmail/internal/store"
+	"ccmail/internal/store"
 )
 
 // Error is a user-facing mail failure with an HTTP status.
@@ -277,4 +277,3 @@ func FindMailboxByKind(a *store.Account, kind string) (*MailboxInfo, error) {
 	}
 	return nil, nil
 }
-

@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"glossmail/internal/mailx"
-	"glossmail/internal/store"
+	"ccmail/internal/mailx"
+	"ccmail/internal/store"
 )
 
 // Recipient is one envelope recipient.
@@ -44,7 +44,7 @@ type Outgoing struct {
 func randomBoundary() string {
 	b := make([]byte, 16)
 	_, _ = rand.Read(b)
-	return fmt.Sprintf("=_gloss-%x", b)
+	return fmt.Sprintf("=_ccmail-%x", b)
 }
 
 func encodeHeader(s string) string {
@@ -99,7 +99,7 @@ func BuildMIME(fromName, fromEmail string, out *Outgoing) []byte {
 	msgID := func() string {
 		r := make([]byte, 10)
 		_, _ = rand.Read(r)
-		return fmt.Sprintf("<gloss-%x@%s>", r, strings.SplitN(fromEmail, "@", 2)[1])
+		return fmt.Sprintf("<ccmail-%x@%s>", r, strings.SplitN(fromEmail, "@", 2)[1])
 	}()
 
 	writeHeader("From", formatAddr(Recipient{Name: fromName, Email: fromEmail}))
@@ -113,7 +113,7 @@ func BuildMIME(fromName, fromEmail string, out *Outgoing) []byte {
 	writeHeader("Date", time.Now().Format("Mon, 02 Jan 2006 15:04:05 -0700"))
 	writeHeader("Message-ID", msgID)
 	writeHeader("MIME-Version", "1.0")
-	writeHeader("X-Mailer", "Gloss Mail")
+	writeHeader("X-Mailer", "ccmail")
 
 	if len(out.Attachments) == 0 && out.HTML != "" {
 		writeHeader("Content-Type", fmt.Sprintf("multipart/alternative; boundary=%q", altBoundary))

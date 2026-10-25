@@ -8,21 +8,21 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"glossmail/internal/store"
+	"ccmail/internal/store"
 )
 
-// Envelope is one message-list row (wire shape matches the Node version).
+// Envelope is one message-list row.
 type Envelope struct {
-	UID            uint32      `json:"uid"`
-	MessageID      string      `json:"messageId,omitempty"`
-	Subject        string      `json:"subject"`
-	From           Addr        `json:"from"`
-	To             []Addr      `json:"to"`
-	Date           string      `json:"date"`
+	UID            uint32        `json:"uid"`
+	MessageID      string        `json:"messageId,omitempty"`
+	Subject        string        `json:"subject"`
+	From           Addr          `json:"from"`
+	To             []Addr        `json:"to"`
+	Date           string        `json:"date"`
 	Flags          EnvelopeFlags `json:"flags"`
-	Size           int64       `json:"size"`
-	HasAttachments bool        `json:"hasAttachments"`
-	Snippet        string      `json:"snippet"`
+	Size           int64         `json:"size"`
+	HasAttachments bool          `json:"hasAttachments"`
+	Snippet        string        `json:"snippet"`
 }
 
 // EnvelopeFlags carries the IMAP flags we display.
@@ -52,16 +52,16 @@ type AttachmentMeta struct {
 
 // FullMessage is the parsed body served to the reader pane.
 type FullMessage struct {
-	UID         uint32           `json:"uid"`
-	Subject     string           `json:"subject"`
-	From        Addr             `json:"from"`
-	To          []Addr           `json:"to"`
-	Cc          []Addr           `json:"cc"`
-	Date        string           `json:"date"`
-	HTML        string           `json:"html,omitempty"`
-	Text        string           `json:"text,omitempty"`
-	Snippet     string           `json:"snippet"`
-	Attachments []AttachmentMeta `json:"attachments"`
+	UID         uint32            `json:"uid"`
+	Subject     string            `json:"subject"`
+	From        Addr              `json:"from"`
+	To          []Addr            `json:"to"`
+	Cc          []Addr            `json:"cc"`
+	Date        string            `json:"date"`
+	HTML        string            `json:"html,omitempty"`
+	Text        string            `json:"text,omitempty"`
+	Snippet     string            `json:"snippet"`
+	Attachments []AttachmentMeta  `json:"attachments"`
 	Headers     map[string]string `json:"headers,omitempty"`
 }
 

@@ -15,8 +15,8 @@ import (
 	"github.com/emersion/go-message"
 	"github.com/emersion/go-message/mail"
 
-	"glossmail/internal/hub"
-	"glossmail/internal/store"
+	"ccmail/internal/hub"
+	"ccmail/internal/store"
 )
 
 var wsRe = regexp.MustCompile(`\s+`)
@@ -34,8 +34,8 @@ func GetMessage(a *store.Account, mailbox string, uid uint32, markSeen bool) (*F
 	err := withClient(a, func(c *imapclient.Client) error {
 		set := imap.UIDSetNum(imap.UID(uid))
 		options := &imap.FetchOptions{
-			UID:          true,
-			BodySection:  []*imap.FetchItemBodySection{{Peek: true}},
+			UID:         true,
+			BodySection: []*imap.FetchItemBodySection{{Peek: true}},
 		}
 		cmd := c.Fetch(&set, options)
 		defer cmd.Close()

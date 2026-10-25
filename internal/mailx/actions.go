@@ -6,7 +6,7 @@ import (
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
 
-	"glossmail/internal/store"
+	"ccmail/internal/store"
 )
 
 // FlagPatch updates seen/flagged flags.
@@ -180,4 +180,3 @@ func invalidateLocal(accountID, mailbox string, uids []uint32, bump bool) {
 	}
 	saveEnv(accountID, mailbox, doc)
 }
-

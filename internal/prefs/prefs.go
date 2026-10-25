@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"glossmail/internal/store"
+	"ccmail/internal/store"
 )
 
 var (

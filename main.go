@@ -1,134 +1,96 @@
-// Gloss Mail desktop — a mygo rewrite: one Go binary serving the frontend
-// from an embedded FS, the API over a custom "api" protocol, live updates
-// over a mygo event, in a frameless window with page-drawn title bar.
+// ccmail is a quiet, focused mail client for any IMAP/SMTP account, drawn
+// with MyGo's native UI: no webview, no front-end build, one Go binary.
 package main
 
 import (
-	"embed"
 	"flag"
 	"fmt"
-	"io/fs"
 	"log"
-	"mime"
 	"os"
-	"net/http"
 	"path/filepath"
-	"runtime"
-	"strings"
+	"time"
 
 	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/ui"
 
-	"glossmail/internal/api"
-	"glossmail/internal/icon"
-	"glossmail/internal/store"
-	"glossmail/internal/watchers"
+	"ccmail/internal/ccapp"
+	"ccmail/internal/icon"
+	"ccmail/internal/store"
+	"ccmail/internal/version"
+	"ccmail/internal/watchers"
 )
-
-//go:embed all:public
-var frontendFiles embed.FS
-
-// Desktop is the small service bound to the page runtime.
-type Desktop struct{}
-
-// APIBase returns the absolute origin the frontend should prefix API
-// requests with when running inside a mygo window.
-func (Desktop) APIBase() string {
-	if runtime.GOOS == "windows" {
-		return "http://api.localhost"
-	}
-	return "api://localhost"
-}
-
-// Version reports the app version.
-func (Desktop) Version() string { return "2.1.0" }
-
-// Diag logs a diagnostic line from the page (used to verify the window's
-// runtime wiring during development).
-func (Desktop) Diag(msg string) {
-	log.Printf("[window-diag] %s", msg)
-}
 
 var mainWindow *mygo.Window
 
 func main() {
-	serve := flag.String("serve", "", "also serve the app on this loopback address (e.g. 127.0.0.1:3731) for browser/debug mode")
+	demo := flag.Bool("demo", false, "preview the interface with sample mail; nothing is saved")
+	capture := flag.String("capture", "", "write window/reader screenshots to this directory, then exit")
 	flag.Parse()
 
 	store.EnsureDirs(".")
 	store.Load()
-	// remove leftover artifacts of the removed built-in demo account
+	// clear leftovers of the removed built-in demo account
 	_ = os.Remove(filepath.Join(store.DataDir, "demo-state.json"))
 	_ = os.RemoveAll(store.DemoFiles)
 
-	mux := api.New()
-
-	front, err := fs.Sub(frontendFiles, "public")
-	if err != nil {
-		log.Fatal(err)
+	app := ccapp.New()
+	if *demo {
+		app.LoadDemoData()
 	}
-	mygo.SetFrontend(front)
-	if err := mygo.Protocol.Handle("api", mux); err != nil {
-		log.Fatalf("register api protocol: %v", err)
-	}
-	mygo.Bind(Desktop{})
+	app.SubscribeToWorkers()
+	app.ApplyStoredTheme()
 
 	watchers.InitAll()
 
-	if *serve != "" {
-		go func() {
-			// loopback mode serves BOTH the API and the embedded frontend
-			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-				if strings.HasPrefix(r.URL.Path, "/api/") {
-					w.Header().Set("Content-Type", "application/json")
-					w.WriteHeader(http.StatusNotFound)
-					_, _ = w.Write([]byte(`{"error":"接口不存在"}`))
-					return
-				}
-				p := strings.TrimPrefix(r.URL.Path, "/")
-				if p == "" {
-					p = "index.html"
-				}
-				data, err := frontendFiles.ReadFile("public/" + p)
-				if err != nil {
-					data, err = frontendFiles.ReadFile("public/index.html")
-					if err != nil {
-						http.NotFound(w, r)
-						return
-					}
-					p = "index.html"
-				}
-				ctype := mime.TypeByExtension(filepath.Ext(p))
-				if ctype == "" {
-					ctype = "application/octet-stream"
-				}
-				w.Header().Set("Content-Type", ctype)
-				_, _ = w.Write(data)
-			})
-			if err := http.ListenAndServe(*serve, mux); err != nil {
-				log.Printf("loopback server: %v", err)
-			}
-		}()
-	}
-
-	appIcon := icon.Generate(256)
-	trayIcon := icon.Generate(32)
-
 	mygo.App.WhenReady(func() {
 		mainWindow = mygo.NewWindow(mygo.WindowOptions{
-			Title:     "Gloss Mail",
-			URL:       "/",
-			Width:     1280,
-			Height:    840,
-			MinWidth:  960,
-			MinHeight: 620,
-			Frameless: true,
-			StateKey:  "main-window",
-			BackgroundColor: "light-dark(#eceef4, #141418)",
+			Title:           version.Name,
+			Width:           1280,
+			Height:          840,
+			MinWidth:        900,
+			MinHeight:       560,
+			TitleBarStyle:   mygo.TitleBarHidden,
+			StateKey:        "main-window",
+			BackgroundColor: "light-dark(#eef0f4, #121216)",
+			Content:         ui.View(app.View),
 		})
-		if err := mainWindow.SetIcon(appIcon); err != nil {
+		app.BindWindow(mainWindow)
+		if err := mainWindow.SetIcon(icon.Generate(256)); err != nil {
 			log.Printf("set window icon: %v", err)
 		}
-		setupTray(trayIcon)
+
+		web, err := mainWindow.NewWebView(mygo.WebViewOptions{
+			BackgroundColor: "light-dark(#ffffff, #1d1d22)",
+		})
+		if err != nil {
+			log.Printf("new web view: %v", err)
+		} else {
+			app.BindWebView(web)
+		}
+
+		mygo.App.SetMenu(mygo.NewMenu([]*mygo.MenuItem{
+			{Role: mygo.RoleAppMenu},
+			{Role: mygo.RoleEditMenu},
+			{Role: mygo.RoleWindowMenu},
+		}))
+
+		if !*demo {
+			app.Refresh()
+		}
+		setupTray(icon.Generate(32))
+
+		if *capture != "" {
+			go func() {
+				time.Sleep(2500 * time.Millisecond)
+				if data, err := mainWindow.CapturePage(); err == nil {
+					_ = os.WriteFile(filepath.Join(*capture, "window.png"), data, 0o644)
+				}
+				if data, err := app.CaptureWeb(); err == nil {
+					_ = os.WriteFile(filepath.Join(*capture, "reader.png"), data, 0o644)
+				}
+				mygo.App.Exit(0)
+			}()
+		}
 	})
 
 	if err := mygo.App.Run(); err != nil {
@@ -138,7 +100,7 @@ func main() {
 
 func setupTray(trayIcon []byte) {
 	menu := mygo.NewMenu([]*mygo.MenuItem{
-		{Label: "显示 Gloss Mail", Click: func(item *mygo.MenuItem, win *mygo.Window) {
+		{Label: "显示 ccmail", Click: func(item *mygo.MenuItem, win *mygo.Window) {
 			if mainWindow != nil {
 				mainWindow.Show()
 			}
@@ -150,10 +112,10 @@ func setupTray(trayIcon []byte) {
 		}},
 	})
 	if _, err := mygo.NewTray(mygo.TrayOptions{
-		ID:     "gloss-main",
-		Icon:   trayIcon,
-		ToolTip: "Gloss Mail",
-		Menu:   menu,
+		ID:      "ccmail-main",
+		Icon:    trayIcon,
+		ToolTip: version.Name,
+		Menu:    menu,
 	}); err != nil {
 		log.Printf("tray: %v", err)
 	}

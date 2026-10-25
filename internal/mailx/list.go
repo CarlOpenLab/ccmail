@@ -8,7 +8,7 @@ import (
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
 
-	"glossmail/internal/store"
+	"ccmail/internal/store"
 )
 
 const (
@@ -36,11 +36,11 @@ func addrList(list []imap.Address) []Addr {
 
 func mapEnvelope(b *imapclient.FetchMessageBuffer) *Envelope {
 	env := &Envelope{
-		UID:       uint32(b.UID),
-		Subject:   "(无主题)",
-		Date:      b.InternalDate.Format(time.RFC3339),
-		Flags:     EnvelopeFlags{Seen: hasFlag(b.Flags, "\\Seen"), Flagged: hasFlag(b.Flags, "\\Flagged"), Answered: hasFlag(b.Flags, "\\Answered"), Draft: hasFlag(b.Flags, "\\Draft")},
-		Size:      b.RFC822Size,
+		UID:     uint32(b.UID),
+		Subject: "(无主题)",
+		Date:    b.InternalDate.Format(time.RFC3339),
+		Flags:   EnvelopeFlags{Seen: hasFlag(b.Flags, "\\Seen"), Flagged: hasFlag(b.Flags, "\\Flagged"), Answered: hasFlag(b.Flags, "\\Answered"), Draft: hasFlag(b.Flags, "\\Draft")},
+		Size:    b.RFC822Size,
 	}
 	if b.Envelope != nil {
 		if b.Envelope.Subject != "" {
@@ -284,7 +284,8 @@ func pageOf(rows []*Envelope, page int) *ListResult {
 	}
 }
 
-func applyQuery(rows []*Envelope, q Query) []*Envelope {	out := make([]*Envelope, 0, len(rows))
+func applyQuery(rows []*Envelope, q Query) []*Envelope {
+	out := make([]*Envelope, 0, len(rows))
 	search := strings.ToLower(q.Search)
 	for _, m := range rows {
 		switch q.Filter {

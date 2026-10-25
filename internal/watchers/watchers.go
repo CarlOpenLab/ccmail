@@ -11,10 +11,10 @@ import (
 
 	"github.com/egoist/mygo"
 
-	"glossmail/internal/hub"
-	"glossmail/internal/mailx"
-	"glossmail/internal/prefs"
-	"glossmail/internal/store"
+	"ccmail/internal/hub"
+	"ccmail/internal/mailx"
+	"ccmail/internal/prefs"
+	"ccmail/internal/store"
 )
 
 // Status is one account's connection state.
@@ -123,10 +123,10 @@ func notifyNewMail(a *store.Account, rows []*mailx.Envelope) {
 		}
 	}
 	n := mygo.NewNotification(mygo.NotificationOptions{
-		ID:    "gloss-new-mail-" + a.ID,
-		Title: "Gloss Mail",
+		ID:    "ccmail-new-mail-" + a.ID,
+		Title: "ccmail",
 		Body:  body,
-		Group: "gloss-mail",
+		Group: "ccmail",
 	})
 	n.OnClick(func() {
 		mygo.App.Focus()

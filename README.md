@@ -1,32 +1,32 @@
-# Gloss Mail ✦
+# ccmail
 
-一个参考 **Gloss Mail 布局**打造的多账号邮件客户端 —— 轻盈、安静、专注。支持 Gmail、QQ 邮箱、163、126、Outlook、iCloud、企业邮箱等任意 IMAP/SMTP 服务，可同时挂载多个账号，聚合到统一收件箱。
+一个安静、专注的多账号邮件客户端。支持 Gmail、QQ 邮箱、163、126、Outlook、iCloud、企业邮箱等任意 IMAP/SMTP 服务，多账号聚合到统一收件箱。
 
-**v2：已使用 [mygo](https://github.com/egoist/mygo) 全部重写为 Go 桌面应用** —— 单个 `gloss-mail.exe`（约 19MB，纯 Go 无 cgo，WebView2 渲染）：前端 `go:embed` 内嵌、API 走 `mygo.Protocol` 自定义协议、实时推送走 mygo 事件、`Frameless` 无边框窗口 + 页内绘制标题栏与窗口控制按钮（可拖拽、最小化/最大化/关闭）。
-
-桌面级能力：**IMAP IDLE 实时新邮件推送**（独立连接、25 分钟自动重连、不支持时降级轮询）、**系统通知**（发件人+主题，点击聚焦窗口）、**托盘菜单**（显示/退出）、程序化生成的**应用图标**（窗口/任务栏/托盘）、添加账号时的 **IMAP+SMTP 双验证**。支持 Gmail、QQ 邮箱、163、126、Outlook、iCloud、企业邮箱等任意 IMAP/SMTP 服务，可同时挂载多个账号，聚合到统一收件箱。
-
-UI 遵循 **Agent Desktop UI 设计系统**：浮动卡片画布（14px 圆角卡片 + 8px 环绕间隙）、无边框海拔阴影（浅色复合投影 / 深色顶部发光描边）、纯色窗口底 + 可选 Oklab 渐变水洗（Rex / Mist / Meadow / Dusk）、内嵌分组设置列表、分段控件与开关、无遮罩可拖拽设置面板、滚动磨砂卡片头。
-
-![tech](https://img.shields.io/badge/Node.js-%E2%89%A518-339933) ![proto](https://img.shields.io/badge/IMAP%2FSMTP-SSL%2FTLS-6d5afc)
+Go + [mygo](https://github.com/egoist/mygo) 桌面应用：**界面是 mygo 原生控件（`github.com/egoist/mygo/ui`）**，没有前端构建、没有页面路由；HTML 邮件正文用 mygo 的 `WebView` 内嵌渲染（系统 WebKit / WebView2）。单一二进制，凭据 AES-256-GCM 加密存储本机。
 
 ## 快速开始
 
 ```bash
-go build -o gloss-mail.exe .               # 需要 Go 1.27+，Win10/11 自带 WebView2
-./gloss-mail.exe                           # 打开桌面窗口
-./gloss-mail.exe --serve 127.0.0.1:3731    # 同时在浏览器提供访问（调试用）
+go build -o ccmail .                    # Go 1.27+
+./ccmail                                # 打开原生窗口
 ```
 
-首次启动进入引导页，添加邮箱账号（支持授权码/应用密码）即可开始收发。
+- macOS 已实测；Windows 需要 WebView2（Win10/11 自带），Linux 需要 WebKitGTK（HTML 邮件正文用到）。
+- 首次启动是空收件箱引导页，点「添加邮箱账号」挂载账号。
+- 运行数据写入当前目录 `data/`，删除即完全重置。
+
+开发时可以用样例数据看界面，不会写盘：
+
+```bash
+./ccmail -demo                          # 预置两账号、六封邮件与一封 HTML 邮件
+./ccmail -demo -capture /tmp/shots      # 抓取窗口与正文截图后退出
+```
 
 ## 添加真实邮箱
 
-点左下角「添加邮箱账号」，选择服务商：
-
 | 服务商 | IMAP | SMTP | 登录凭据 |
 |---|---|---|---|
-| QQ 邮箱 | imap.qq.com:993 | smtp.qq.com:465 | **授权码**（网页版 设置→账户→开启 IMAP） |
+| QQ 邮箱 | imap.qq.com:993 | smtp.qq.com:465 | **授权码**（网页版 设置 → 账户 → 开启 IMAP） |
 | Gmail | imap.gmail.com:993 | smtp.gmail.com:465 | **应用专用密码**（需两步验证） |
 | 163 / 126 | imap.163.com:993 | smtp.163.com:465 | **客户端授权密码** |
 | Outlook / M365 | outlook.office365.com:993 | smtp.office365.com:587 | 应用密码 |
@@ -35,81 +35,70 @@ go build -o gloss-mail.exe .               # 需要 Go 1.27+，Win10/11 自带 W
 | 阿里企业邮箱 | imap.mxhichina.com:993 | smtp.qiye.aliyun.com:465 | 邮箱密码 |
 | 自定义 | 任意 | 任意 | — |
 
-添加向导会先真实连接 IMAP 验证凭据，再尝试 SMTP，全部通过后账号挂载进侧栏。多个账号按颜色区分，头部头像堆叠可快速切换。
+添加向导会真实连接 IMAP 验证凭据，再尝试 SMTP；验证通过后账号立即挂载并在后台同步。多个账号按颜色区分，标题栏头像可快速切换。
 
-## 功能一览
+## 功能
 
-**邮件收发**
-- 多账号挂载，统一收件箱聚合 + 星标智能视图
-- IMAP IDLE 实时推送（SSE），新邮件即时提醒
-- 读信（HTML 正文沙箱渲染、远程图片默认屏蔽、内联 CID 图片）
-- 写信 / 回复 / 回复全部 / 转发，富文本工具栏，附件拖拽，Ctrl+Enter 发送
-- 已发送自动归档到 Sent 文件夹
-- 标星、已读/未读、归档、删除（进废纸篓）、文件夹间移动
-- 站内搜索 + 未读/星标/附件筛选，日期分组（今天/昨天/本周）
+**收发**
+- 多账号统一收件箱 + 星标视图，按日期分组的原生列表
+- IMAP IDLE 实时推送；不支持时降级为轮询
+- HTML 正文渲染：白名单清洗（剥离脚本 / iframe / 表单 / `on*`），默认拦截远程图片并可一键加载，内联 CID 图片转 data URL
+- 写信 / 回复 / 回复全部 / 转发；富文本编辑器（加粗、斜体、下划线、列表、链接、粘贴格式）、附件、`⌘ + Enter` 发送
+- 已发送自动归档；标星、已读/未读、归档、删除、文件夹移动
+- 站内搜索 + 未读 / 星标 / 附件筛选
 
 **体验**
-- Agent Desktop UI 设计系统：邮件列表 + 阅读面板合并为一张 14px 浮动卡片（内部发丝线分隔），侧栏直接落在窗口底色上，8px 环绕间隙 / 无边框海拔
-- 浅色 / 深色 / 跟随系统主题 + 4 种 Oklab 渐变水洗背景（设置 → 外观，实时预览）
-- 列表筛选为分段控件；设置面板为无遮罩浮动窗口（可拖拽、实时预览），含完整偏好中心：
-  - 外观：主题 / 列表密度（舒适·紧凑）/ Oklab 背景水洗
-  - 阅读：自动标为已读 / 自动加载远程图片 / 回复时引用原文
-  - 通知：新邮件系统通知开关（写入 data/prefs.json，后端实时生效）
-  - 账号：上次同步时间、账号编辑/删除、邮件缓存清除、演示数据重置
-- 完整键盘流：`J/K` 导航、`Enter` 打开、`R/A/F` 回复转发、`S` 星标、`E` 归档、`Del` 删除、`/` 搜索、`?` 查看全部
-- 列表右键菜单、hover 快捷星标
-- 响应式：桌面单卡片双栏 → 平板阅读全屏 → 手机单栏 + 抽屉侧栏
-- 骨架屏、空状态插画、Toast、连接状态指示灯
+- 原生控件绘制：侧栏、消息列表、阅读区、抽屉式设置、对话框与菜单
+- 浮动卡片布局：列表与阅读区合并为一张 16px 卡片，侧栏落在窗口底色上
+- 浅色 / 深色 / 跟随系统，4 种 Oklab 渐变水洗背景
+- 设置面板：账号（改名 / 换色 / 移除 / 清缓存）、外观、快捷键、关于
+- 桌面通知（发件人 + 主题，点击聚焦窗口）、托盘菜单、程序化应用图标
+- 键盘流：`J/K` 导航、`Enter` 打开、`N` 写信、`R/A/F` 回复转发、`S` 星标、`E` 归档、`Del` 删除、`/` 或 `⌘K` 搜索、`?` 快捷键
+- 窄窗口自适应：列表 / 阅读单栏切换，侧栏抽屉
 
 **隐私**
-- 凭据以 AES-256-GCM 加密存储在本机 `data/secret.key` 派生的密钥下，绝不回传浏览器
-- 邮件缓存（信封/正文/附件）全部落在本机 `data/cache/`
-- 不内置任何统计或遥测
+- 凭据以 AES-256-GCM 加密存储于本机 `data/secret.key` 派生的密钥下
+- 邮件缓存位于 `data/cache/`；无统计、无遥测
 
 ## 架构
 
 ```
-gloss-mail/
-├── main.go               mygo 桌面入口：embed 前端 / api 协议 / Frameless 窗口
-├── internal/             Go 后端
-│   ├── api/              REST 路由（与 Node 版端点一一对应）
-│   ├── mailx/            IMAP 层（go-imap v2）：连接池/同步缓存/解析/标记
+ccmail/
+├── main.go               mygo 入口：原生窗口 / 托盘 / 菜单 / 截图调试
+├── internal/
+│   ├── ccapp/            原生界面：状态、控制器、主题与各窗格视图
+│   │   ├── app.go        快捷键、窗口底色、生命周期
+│   │   ├── model.go      应用状态
+│   │   ├── data.go       IMAP/SMTP 调用、列表与消息加载、事件订阅
+│   │   ├── view.go       窗口骨架与标题栏
+│   │   ├── sidebar.go    源列表
+│   │   ├── list.go       消息列表
+│   │   ├── reader.go     阅读区与附件
+│   │   ├── compose.go    写信表单与富文本编辑器
+│   │   ├── settings.go   设置（账号 / 外观 / 快捷键 / 关于）
+│   │   ├── wizard.go     添加账号向导
+│   │   ├── htmlmail.go   HTML 清洗与正文文档
+│   │   ├── palette.go    设计令牌（明 / 暗）
+│   │   ├── icons.go      SVG 图标集
+│   │   └── demo.go       样例数据（-demo）
+│   ├── mailx/            IMAP（go-imap v2）：连接池、增量同步、解析、标记
 │   ├── smtpx/            发信（MIME 构造 + net/smtp + Sent 归档）
 │   ├── store/            账号存储（JSON + AES-256-GCM）
 │   ├── providers/        服务商预设
-│   ├── watchers/         账号状态 + 定时同步
-│   └── hub/              事件广播（mygo 事件 + SSE）
-├── gloss-mail.exe        go build 产出的单文件桌面应用
-├── server/               Node.js 后端
-│   ├── index.js          Express API + SSE + 静态托管
-│   ├── mail.js           IMAP 层（ImapFlow）：同步/信封缓存/取信/标记/移动
-│   ├── smtp.js           发信（Nodemailer）+ Sent 归档
-│   ├── watchers.js       每账号一条 IDLE 连接，推送新邮件与在线状态
-│   ├── store.js          账号存储（JSON + AES-256-GCM）
-│   ├── providers.js      服务商预设（含服务器地址与授权码指引）
-│   └── demo-data.js      演示账号内容（含程序化生成的 PNG 海报附件）
-├── public/               前端（原生 ES Modules，无构建步骤）
-│   ├── styles.css        设计系统（双主题、三栏、组件样式）
-│   └── js/               store / api / sidebar / list / reader / compose / settings
+│   ├── watchers/         账号状态、定时同步、IDLE、桌面通知
+│   ├── hub/              进程内事件广播（原生 UI 订阅）
+│   ├── prefs/            本机偏好
+│   ├── icon/             程序化生成的窗口 / 托盘图标
+│   └── version/          应用名称与版本号
 └── data/                 运行时数据（可随时删除重置）
 ```
 
-- **同步策略**：按邮箱维护 UIDVALIDITY + UIDNEXT 增量同步，信封（主题/发件人/标志）缓存于本地；正文按需拉取并缓存，摘要（snippet）后台预取渐进填充列表。
-- **零账号引导**：未挂载账号时列表区显示引导页，一键进入添加向导。
-- **实时**：每个真实账号一条独立 IDLE 连接监听 INBOX（Go 版原生 IDLE，25 分钟重连，不支持时自动降级轮询），经 mygo 事件/SSE 广播 `mail:counts` / `account:status`，前端刷新徽标、弹出提醒并触发**系统桌面通知**。
-- **安全渲染**：HTML 邮件经 DOMParser 白名单式清洗（剥离 script/iframe/on*），在 `sandbox` iframe 中渲染（无脚本执行、禁顶层导航），远程图片默认替换为占位。
-
-## 常用配置
-
-```bash
-PORT=8080 npm start        # 自定义端口（默认 3728）
-HOST=0.0.0.0 npm start     # 允许局域网访问（默认仅本机）
-```
-
-删除 `data/` 目录即可完全重置（账号、缓存、演示数据）。
+- **视图模型**：`ui.View` 每帧从 `ccapp.App` 的状态构建界面；后台 goroutine 通过 `Window.Update` 回到主线程写状态并重绘。
+- **同步**：按邮箱维护 UIDVALIDITY + UIDNEXT 做增量同步，信封缓存本地；正文按需拉取并缓存，摘要后台渐进填充。
+- **实时**：每个真实账号一条独立 IDLE 连接监听 INBOX（25 分钟重连），事件经 `hub` 广播；界面聚合刷新状态与列表。
+- **安全渲染**：HTML 先经白名单清洗（`internal/ccapp/htmlmail.go`），再交给内嵌 WebView；远程图片默认替换为占位并可手动加载，相对链接不导航。
 
 ## 说明
 
-- UI 布局灵感来自 [Gloss Mail](https://gloss.email)，本项目为独立实现，与其无关联。
-- Gmail/QQ/163 等服务商要求「授权码 / 应用专用密码」而非网页登录密码，向导内有逐步指引。
-- 适合个人自部署使用；如需暴露到公网请自行加反向代理与鉴权。
+- Gmail / QQ / 163 等服务商要求「授权码 / 应用专用密码」而非网页登录密码，向导内有指引。
+- 适合个人自部署；暴露公网请自行加反向代理与鉴权。
