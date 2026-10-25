@@ -5,8 +5,22 @@ import (
 	"os"
 	"testing"
 
+	"ccmail/internal/store"
+
 	"github.com/egoist/mygo/ui"
 )
+
+func TestMain(m *testing.M) {
+	// keep every test write out of the repository's data directory
+	root, err := os.MkdirTemp("", "ccmail-test")
+	if err != nil {
+		panic(err)
+	}
+	store.EnsureDirs(root)
+	code := m.Run()
+	_ = os.RemoveAll(root)
+	os.Exit(code)
+}
 
 // seed fills the app with the same sample data the -demo flag installs.
 func seed(a *App) { a.LoadDemoData() }

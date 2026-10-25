@@ -42,6 +42,20 @@ func loadPrefs() Prefs {
 	}
 }
 
+// defaultPrefs is the app's starting configuration, which the tests use so a
+// developer's own data/prefs.json never changes a screenshot.
+func defaultPrefs() Prefs {
+	return Prefs{
+		Theme:         "auto",
+		Wash:          "plain",
+		Accent:        "ink",
+		Density:       "cozy",
+		MarkRead:      true,
+		Notifications: true,
+		QuoteReply:    true,
+	}
+}
+
 func (a *App) savePrefs() {
 	on := func(b bool) string {
 		if b {

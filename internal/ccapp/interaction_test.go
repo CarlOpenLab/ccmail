@@ -114,9 +114,9 @@ func TestSettingsAndWizardOpen(t *testing.T) {
 
 func TestSidebarCollapseToggle(t *testing.T) {
 	a, tt := newTestApp(t)
-	before, ok := tt.Find("侧栏")
+	before, ok := tt.Find("邮件列表")
 	if !ok {
-		t.Fatal("sidebar not found")
+		t.Fatal("list not found")
 	}
 	if err := tt.Click("收起侧栏"); err != nil {
 		t.Fatalf("click collapse: %v", err)
@@ -129,19 +129,19 @@ func TestSidebarCollapseToggle(t *testing.T) {
 	// the width eases to the rail rather than snapping
 	tt.Advance(80 * time.Millisecond)
 	tt.Frame()
-	mid, ok := tt.Find("侧栏")
+	mid, ok := tt.Find("邮件列表")
 	if !ok {
-		t.Fatal("sidebar vanished mid-transition")
+		t.Fatal("list vanished mid-transition")
 	}
-	if mid.W >= before.W || mid.W <= 70 {
-		t.Fatalf("width did not animate: before=%.1f mid=%.1f", before.W, mid.W)
+	if mid.X > before.X-20 || mid.X < 80 {
+		t.Fatalf("card did not ease with the collapse: before=%.1f mid=%.1f", before.X, mid.X)
 	}
 
 	tt.Advance(300 * time.Millisecond)
 	tt.Frame()
-	end, _ := tt.Find("侧栏")
-	if end.W > 80 {
-		t.Fatalf("rail width %.1f, want ~64", end.W)
+	end, _ := tt.Find("邮件列表")
+	if end.X > 90 {
+		t.Fatalf("rail width leaves the list at %.1f, want ~74", end.X)
 	}
 	if tt.HasText("智能视图") {
 		t.Fatal("collapsed rail still shows section labels")
@@ -152,9 +152,9 @@ func TestSidebarCollapseToggle(t *testing.T) {
 	}
 	tt.Advance(300 * time.Millisecond)
 	tt.Frame()
-	back, _ := tt.Find("侧栏")
-	if a.prefs.SidebarShut || back.W < 200 {
-		t.Fatalf("sidebar did not expand: shut=%v w=%.1f", a.prefs.SidebarShut, back.W)
+	back, _ := tt.Find("邮件列表")
+	if a.prefs.SidebarShut || back.X < 200 {
+		t.Fatalf("sidebar did not expand: shut=%v x=%.1f", a.prefs.SidebarShut, back.X)
 	}
 	if !tt.HasText("智能视图") {
 		t.Fatal("expanded sidebar lost its section labels")

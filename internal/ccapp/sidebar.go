@@ -20,7 +20,7 @@ func (a *App) sidebar(c *ui.Context, p palette, compact bool) {
 			a.sidebarRail(c, p)
 			return
 		}
-		ui.Column(c).Gap(4).Children(func() {
+		ui.Column(c).Width(a.sidebarW).Gap(4).Children(func() {
 			side := ui.Sidebar(c, &a.sidebarSel, func() {
 				ui.SidebarSection(c, "智能视图", nil, func() {
 					item := ui.SidebarItem(c, "unified", iconInbox, "全部收件箱")
@@ -79,42 +79,65 @@ func (a *App) sidebar(c *ui.Context, p palette, compact bool) {
 	})
 }
 
-// sidebarRail is the collapsed sidebar: icons only, named by tooltips.
+// sidebarRail is the collapsed sidebar. Items keep the expanded list's
+// rhythm (30px rows, same icon column) so collapsing moves nothing sideways
+// and only the labels go away.
 func (a *App) sidebarRail(c *ui.Context, p palette) {
-	side := ui.Sidebar(c, &a.sidebarSel, func() {
-		ui.SidebarItem(c, "unified", iconInbox, "").Tooltip("全部收件箱")
-		ui.SidebarItem(c, "flagged", iconStar, "").Tooltip("星标邮件")
-		for _, acc := range a.accounts {
-			folders := visibleFolders(acc.Folders)
-			prim := Folder{Name: "收件箱", Kind: "inbox"}
-			for _, f := range folders {
-				if f.Kind == "inbox" {
-					prim = f
-					break
-				}
-			}
-			if len(folders) > 0 && prim.Path == "" {
-				prim = folders[0]
-			}
-			icon := folderIcons[prim.Kind]
-			if icon == nil {
-				icon = iconFolder
-			}
-			ui.SidebarItem(c, "folder/"+acc.ID+"/"+prim.Path, icon, "").
-				Tooltip(acc.Name)
+	const size = 30
+	item := func(id string, icon *ui.SVG, label string) {
+		active := a.sidebarSel == id
+		b := ui.ButtonBase(c).Size(size, size).Radius(7).Center().Label(label).Tooltip(label)
+		switch {
+		case active:
+			b.Background(p.ChipDeep)
+		case b.Hovered():
+			b.Background(p.Hover)
 		}
-	}).Grow(1).Label("侧栏").Background(ui.Transparent)
-
-	if side.Changed() {
-		a.sidebarChanged()
+		color := p.Muted
+		if active {
+			color = p.Text
+		}
+		b.Children(func() { ui.Icon(c, icon).FontSize(17).TextColor(color) })
+		b.OnClick(func() {
+			a.sidebarSel = id
+			a.sidebarChanged()
+		})
+	}
+	rule := func() {
+		ui.Box(c).Width(20).Height(1).Background(p.Border).Margin(6, 0)
 	}
 
-	add := ui.ButtonBase(c).Size(34, 34).Radius(8).Center().Label("添加邮箱账号").Tooltip("添加邮箱账号")
-	if add.Hovered() {
-		add.Background(p.Chip)
-	}
-	add.Children(func() { ui.Icon(c, iconPlus).FontSize(15).TextColor(p.Muted) })
-	add.OnClick(func() { a.openWizard() })
+	ui.Column(c).Width(52).FillHeight().AlignItems(ui.Center).Padding(0, 0, 8, 0).Children(func() {
+		ui.Scroll(c).Grow(1).Children(func() {
+			ui.Column(c).FillWidth().AlignItems(ui.Center).Children(func() {
+				// the expanded list starts under its section title: keep the
+				// first icon on the same line when the labels go away
+				ui.Box(c).Height(32)
+				item("unified", iconInbox, "全部收件箱")
+				item("flagged", iconStar, "星标邮件")
+				for _, acc := range a.accounts {
+					if len(acc.Folders) > 0 {
+						rule()
+					}
+					for _, f := range visibleFolders(acc.Folders) {
+						icon := folderIcons[f.Kind]
+						if icon == nil {
+							icon = iconFolder
+						}
+						item("folder/"+acc.ID+"/"+f.Path, icon, acc.Name+" · "+f.Name)
+					}
+				}
+			})
+		})
+
+		add := ui.ButtonBase(c).Size(size, size).Radius(7).Center().
+			Label("添加邮箱账号").Tooltip("添加邮箱账号")
+		if add.Hovered() {
+			add.Background(p.Hover)
+		}
+		add.Children(func() { ui.Icon(c, iconPlus).FontSize(16).TextColor(p.Muted) })
+		add.OnClick(func() { a.openWizard() })
+	})
 }
 
 // sectionOpen keeps one account's fold state across frames.

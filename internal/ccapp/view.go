@@ -42,12 +42,25 @@ func (a *App) View(c *ui.Context) {
 				host := ui.Column(c).Key("sidebar-host")
 				target := a.sidebarW
 				if a.prefs.SidebarShut {
-					target = 64
+					// 52 keeps the rail's icon column on the expanded
+					// sidebar's icon column (host inset 10 + 26)
+					target = 52
 				}
 				w := host.Animate("width", target, 200*time.Millisecond)
 				host.Width(w).Shrink(0).FillHeight().Clip()
 				host.Children(func() {
-					a.sidebar(c, p, a.prefs.SidebarShut)
+					// the rail keeps its final column so the icons never
+					// move; only the gutter around them closes
+					if a.prefs.SidebarShut {
+						ui.Column(c).Width(52).FillHeight().
+							Opacity(clamp01((a.sidebarW-w)/96 + 0.3)).Children(func() {
+							a.sidebar(c, p, true)
+						})
+						return
+					}
+					ui.Column(c).Width(a.sidebarW).FillHeight().Children(func() {
+						a.sidebar(c, p, false)
+					})
 				})
 			}
 			a.card(c, p, compact)
@@ -124,32 +137,15 @@ func (a *App) titlebar(c *ui.Context, p palette, bar ui.TitleBar, compact, narro
 	right := bar.Right + 12
 	ui.Row(c).Height(maxFloat(bar.Height, 56)).DragWindow().Padding(0, right, 0, left).
 		Gap(10).AlignItems(ui.Center).Children(func() {
-		// left wing: the sidebar toggle on narrow windows, else just room
-		ui.Row(c).Grow(1).AlignItems(ui.Center).Children(func() {
-			btn := ui.ButtonBase(c).Size(30, 30).Radius(8).Center()
-			if btn.Hovered() {
-				btn.Background(p.ChipDeep)
-			}
-			if narrow {
-				btn.Label("打开侧栏").Tooltip("打开侧栏 (⌘B)")
-				btn.Children(func() { ui.Icon(c, iconMenu).FontSize(18).TextColor(p.Muted) })
-				btn.OnClick(func() { a.sidebarOpen = !a.sidebarOpen })
-				return
-			}
-			shut := a.prefs.SidebarShut
-			btn.Label(map[bool]string{true: "展开侧栏", false: "收起侧栏"}[shut]).
-				Tooltip(map[bool]string{true: "展开侧栏 (⌘B)", false: "收起侧栏 (⌘B)"}[shut])
-			icon := iconSidebarCollapse
-			if shut {
-				icon = iconSidebarExpand
-			}
-			btn.Children(func() { ui.Icon(c, icon).FontSize(18).TextColor(p.Muted) })
-			btn.OnClick(func() { a.toggleSidebar() })
-		})
+		// left wing only clears the window controls; the sidebar toggle
+		// sits right beside the search field
+		ui.Row(c).Grow(1).AlignItems(ui.Center)
 
-		// the search field sits on the window's center line
-		ui.Row(c).Children(func() {
+		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
+			a.sidebarToggle(c, p, narrow)
 			a.searchBar(c, p, compact, narrow)
+			// balance the toggle so the field keeps the window's center line
+			ui.Box(c).Width(38).Height(1)
 		})
 
 		ui.Row(c).Grow(1).Justify(ui.End).Gap(4).AlignItems(ui.Center).Children(func() {
@@ -246,8 +242,42 @@ func (a *App) toggleTheme() {
 }
 
 // searchBar is the title bar's field: magnifier, input, clear key.
+func clamp01(v float32) float32 {
+	if v < 0 {
+		return 0
+	}
+	if v > 1 {
+		return 1
+	}
+	return v
+}
+
 // toggleSidebar collapses the sidebar to its rail, or opens the drawer when
 // the window is too narrow for one.
+// sidebarToggle collapses the sidebar to its rail, or opens the drawer on a
+// narrow window.
+func (a *App) sidebarToggle(c *ui.Context, p palette, narrow bool) {
+	btn := ui.ButtonBase(c).Size(30, 30).Radius(8).Center()
+	if btn.Hovered() {
+		btn.Background(p.ChipDeep)
+	}
+	if narrow {
+		btn.Label("打开侧栏").Tooltip("打开侧栏 (⌘B)")
+		btn.Children(func() { ui.Icon(c, iconMenu).FontSize(18).TextColor(p.Muted) })
+		btn.OnClick(func() { a.sidebarOpen = !a.sidebarOpen })
+		return
+	}
+	shut := a.prefs.SidebarShut
+	btn.Label(map[bool]string{true: "展开侧栏", false: "收起侧栏"}[shut]).
+		Tooltip(map[bool]string{true: "展开侧栏 (⌘B)", false: "收起侧栏 (⌘B)"}[shut])
+	icon := iconSidebarCollapse
+	if shut {
+		icon = iconSidebarExpand
+	}
+	btn.Children(func() { ui.Icon(c, icon).FontSize(18).TextColor(p.Muted) })
+	btn.OnClick(func() { a.toggleSidebar() })
+}
+
 func (a *App) toggleSidebar() {
 	a.prefs.SidebarShut = !a.prefs.SidebarShut
 	a.savePrefs()

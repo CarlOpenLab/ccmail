@@ -10,6 +10,7 @@ import (
 // previewed and screenshotted without touching a real mailbox. It never
 // writes to the store: everything lives in the app's state.
 func (a *App) LoadDemoData() {
+	a.prefs = defaultPrefs()
 	a.accounts = []*AccountVM{
 		{ID: "demo-work", Name: "工作邮箱", Email: "me@work.com", Color: "#3b6cf6", Status: "online",
 			Folders: []Folder{
