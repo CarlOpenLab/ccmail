@@ -1,7 +1,7 @@
 package ccapp
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 	"sort"
@@ -18,6 +18,7 @@ import (
 	"ccmail/internal/smtpx"
 	"ccmail/internal/store"
 	"ccmail/internal/watchers"
+	"ccmail/locales"
 )
 
 // loadPrefs reads the stored preferences with the app's defaults.
@@ -31,6 +32,7 @@ func loadPrefs() Prefs {
 	}
 	return Prefs{
 		Theme:         get("theme", "auto"),
+		Language:      get("language", "auto"),
 		Wash:          get("wash", "plain"),
 		Density:       get("density", "cozy"),
 		MarkRead:      get("markRead", "1") != "0",
@@ -46,6 +48,7 @@ func loadPrefs() Prefs {
 func defaultPrefs() Prefs {
 	return Prefs{
 		Theme:         "auto",
+		Language:      "auto",
 		Wash:          "plain",
 		Density:       "cozy",
 		MarkRead:      true,
@@ -53,6 +56,9 @@ func defaultPrefs() Prefs {
 		QuoteReply:    true,
 	}
 }
+
+// StartupLocale reports the saved language for mygo's locale wiring at boot.
+func StartupLocale() string { return prefs.Get("language", "auto") }
 
 func (a *App) savePrefs() {
 	on := func(b bool) string {
@@ -63,6 +69,7 @@ func (a *App) savePrefs() {
 	}
 	prefs.SetMany(map[string]string{
 		"theme":         a.prefs.Theme,
+		"language":      a.prefs.Language,
 		"wash":          a.prefs.Wash,
 		"density":       a.prefs.Density,
 		"markRead":      on(a.prefs.MarkRead),
@@ -254,7 +261,7 @@ func fetchList(view ViewSel, query, filter string, page int) ([]*MsgRef, int, er
 	if view.Kind == "folder" {
 		acct := store.Get(view.AccountID)
 		if acct == nil {
-			return nil, 0, fmt.Errorf("账号不存在")
+			return nil, 0, errors.New(locales.ComposeAccountMissing())
 		}
 		res, err := mailx.ListMessages(acct, view.Path, mailx.Query{Page: page, Search: query, Filter: filter})
 		if err != nil {
@@ -372,7 +379,7 @@ func (a *App) openMessage(ref *MsgRef) {
 		if acct == nil {
 			a.update(func() {
 				a.msgLoading = false
-				a.msgErr = "账号不存在"
+				a.msgErr = locales.ComposeAccountMissing()
 				a.loadBody()
 			})
 			return
@@ -474,10 +481,10 @@ func (a *App) archiveMessage(ref *MsgRef) {
 			return
 		}
 		if err := mailx.ArchiveMessages(acct, path, []uint32{uid}); err != nil {
-			a.update(func() { a.flash("归档失败："+err.Error(), "error") })
+			a.update(func() { a.flash(locales.DataArchiveFailed()+err.Error(), "error") })
 			return
 		}
-		a.update(func() { a.flash("已归档", "success") })
+		a.update(func() { a.flash(locales.DataArchived(), "success") })
 	}()
 }
 
@@ -490,10 +497,10 @@ func (a *App) deleteMessage(ref *MsgRef) {
 			return
 		}
 		if err := mailx.DeleteMessages(acct, path, []uint32{uid}); err != nil {
-			a.update(func() { a.flash("删除失败："+err.Error(), "error") })
+			a.update(func() { a.flash(locales.DataDeleteFailed()+err.Error(), "error") })
 			return
 		}
-		a.update(func() { a.flash("已移到废纸篓", "success") })
+		a.update(func() { a.flash(locales.DataMovedToTrash(), "success") })
 	}()
 }
 
@@ -507,10 +514,10 @@ func (a *App) moveMessage(ref *MsgRef, dest string) {
 			return
 		}
 		if err := mailx.MoveMessages(acct, path, []uint32{uid}, dest); err != nil {
-			a.update(func() { a.flash("移动失败："+err.Error(), "error") })
+			a.update(func() { a.flash(locales.DataMoveFailed()+err.Error(), "error") })
 			return
 		}
-		a.update(func() { a.flash("已移动", "success") })
+		a.update(func() { a.flash(locales.DataMoved(), "success") })
 	}()
 }
 
@@ -545,10 +552,10 @@ func (a *App) removeRow(ref *MsgRef) {
 func (a *App) addAccount(in AddAccountInput) (string, error) {
 	email := strings.ToLower(strings.TrimSpace(in.Email))
 	if !strings.Contains(email, "@") {
-		return "", fmt.Errorf("请填写有效的邮箱地址")
+		return "", errors.New(locales.ComposeBadEmail())
 	}
 	if in.Password == "" {
-		return "", fmt.Errorf("请填写密码或授权码")
+		return "", errors.New(locales.ComposeNeedPassword())
 	}
 
 	providerID := in.Provider
@@ -570,10 +577,10 @@ func (a *App) addAccount(in AddAccountInput) (string, error) {
 		smtpHost = preset.SMTP.Host
 	}
 	if imapHost == "" {
-		return "", fmt.Errorf("缺少 IMAP 服务器地址")
+		return "", errors.New(locales.DataNeedImapHost())
 	}
 	if smtpHost == "" {
-		return "", fmt.Errorf("缺少 SMTP 服务器地址")
+		return "", errors.New(locales.DataNeedSmtpHost())
 	}
 	imapPort := in.IMAPPort
 	if imapPort == 0 {
@@ -593,7 +600,7 @@ func (a *App) addAccount(in AddAccountInput) (string, error) {
 	}
 	warning := ""
 	if err := smtpx.Verify(smtpHost, smtpPort, preset.SMTP.Secure, authUser, in.Password); err != nil {
-		warning = "SMTP 验证未通过（可能仍可收信）：" + err.Error()
+		warning = locales.DataSmtpUnverified() + err.Error()
 	}
 
 	name := strings.TrimSpace(in.Name)
@@ -620,7 +627,7 @@ func (a *App) addAccount(in AddAccountInput) (string, error) {
 func (a *App) clearCache() {
 	entries, err := os.ReadDir(store.CacheDir)
 	if err != nil {
-		a.flash("清除失败："+err.Error(), "error")
+		a.flash(locales.DataClearFailed()+err.Error(), "error")
 		return
 	}
 	n := 0
@@ -629,7 +636,7 @@ func (a *App) clearCache() {
 			n++
 		}
 	}
-	a.flash(fmt.Sprintf("已清除缓存（%d 项）", n), "success")
+	a.flash(locales.DataCacheCleared(n), "success")
 }
 
 func (a *App) removeAccount(id string) {

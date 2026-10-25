@@ -2,7 +2,7 @@ package ccapp
 
 import (
 	"encoding/base64"
-	"fmt"
+	"errors"
 	"os"
 	"strings"
 
@@ -12,6 +12,7 @@ import (
 	"golang.org/x/net/html/atom"
 
 	"ccmail/internal/mailx"
+	"ccmail/locales"
 )
 
 // Elements that never belong in a message body.
@@ -38,7 +39,7 @@ func sanitizeEmail(raw string, m *mailx.FullMessage, allowRemote bool) (string, 
 	}
 	body := findBody(doc)
 	if body == nil {
-		return "", 0, fmt.Errorf("邮件正文为空")
+		return "", 0, errors.New(locales.ReaderEmptyBody())
 	}
 
 	cid := cidIndex(m)
@@ -115,7 +116,7 @@ func cleanElement(el *html.Node, cid map[string]string, allowRemote bool, blocke
 			setAttr(el, "height", "90")
 		}
 		setAttr(el, "style", "width:220px;height:90px;background:rgba(120,120,140,0.14);border-radius:8px;display:block")
-		setAttr(el, "alt", "已屏蔽远程图片")
+		setAttr(el, "alt", locales.ReaderRemoteBlockedNote())
 	}
 
 	if el.DataAtom == atom.A {

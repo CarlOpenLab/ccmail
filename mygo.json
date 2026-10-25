@@ -4,5 +4,9 @@
   "version": "2.2.0",
   "copyright": "© 2026 CarlOpenLab",
   "icon": "resources/icon.png",
-  "out": "build"
+  "out": "build",
+  "i18n": {
+    "dir": "locales",
+    "source": "en"
+  }
 }

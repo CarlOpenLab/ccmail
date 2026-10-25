@@ -1,13 +1,13 @@
 package ccapp
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/egoist/mygo/ui"
 
 	"ccmail/internal/mailx"
 	"ccmail/internal/store"
+	"ccmail/locales"
 )
 
 // listPane is the message list: its heading, filters, and the rows.
@@ -19,25 +19,25 @@ func (a *App) listPane(c *ui.Context, p palette) {
 					ui.Text(c, a.viewTitle()).FontSize(17).Bold().SingleLine().TextColor(p.Text)
 					ui.Text(c, a.viewSubtitle()).FontSize(12).TextColor(p.Faint).SingleLine()
 				})
-				more := ui.ButtonBase(c).Label("更多操作").Tooltip("更多操作").Size(28, 28).Radius(8).Center()
+				more := ui.ButtonBase(c).Label(locales.ListMoreActions()).Tooltip(locales.ListMoreActions()).Size(28, 28).Radius(8).Center()
 				more.Children(func() { ui.Icon(c, iconMore).FontSize(17).TextColor(p.Muted) })
 				if more.Hovered() {
 					more.Background(p.HoverStrong)
 				}
 				more.Menu(func(m *ui.Menu) {
-					if m.Item("刷新列表").Chosen() {
+					if m.Item(locales.TitlebarRefresh()).Chosen() {
 						a.reloadList(true)
 					}
-					if m.Item("全部标为已读").Chosen() {
+					if m.Item(locales.ListMenuMarkAllRead()).Chosen() {
 						a.markAllRead()
 					}
-					if m.Item("回到全部收件箱").Chosen() {
-						a.navigate(ViewSel{Kind: "unified", Name: "全部收件箱"})
+					if m.Item(locales.ListMenuBackToUnified()).Chosen() {
+						a.navigate(ViewSel{Kind: "unified", Name: locales.MiscUnifiedInbox()})
 					}
 				})
 			})
 
-			seg := ui.Segmented(c, &a.filter, "全部", "未读", "星标", "附件").Label("筛选邮件").AlignSelf(ui.Start)
+			seg := ui.Segmented(c, &a.filter, locales.ListFilterAll(), locales.ListFilterUnread(), locales.ListFilterStarred(), locales.ListFilterAttachments()).Label(locales.ListFilter()).AlignSelf(ui.Start)
 			if seg.Changed() {
 				a.reloadList(true)
 			}
@@ -58,30 +58,30 @@ func (a *App) listPane(c *ui.Context, p palette) {
 		c.SetTheme(&listTheme)
 		lst := ui.List(c, &a.list, len(a.rows), func(i int) {
 			a.listRow(c, p, i)
-		}).Grow(1).Padding(4, 8).Gap(2).Label("邮件列表")
+		}).Grow(1).Padding(4, 8).Gap(2).Label(locales.ListAriaLabel())
 		c.SetTheme(&base)
 
 		lst.Children(func() {
 			if a.loading && len(a.rows) == 0 {
 				ui.Column(c).Fill().Center().Gap(10).Children(func() {
 					ui.Spinner(c)
-					ui.Text(c, "正在同步邮件…").FontSize(12.5).TextColor(p.Faint)
+					ui.Text(c, locales.ListSyncing()).FontSize(12.5).TextColor(p.Faint)
 				})
 				return
 			}
 			if a.loadErr != "" {
 				ui.Column(c).Fill().Center().Gap(8).Padding(30).Children(func() {
 					ui.Icon(c, iconJunk).FontSize(28).TextColor(p.Danger)
-					ui.Text(c, "加载失败").FontSize(14).Bold().TextColor(p.Text)
+					ui.Text(c, locales.ListLoadFailed()).FontSize(14).Bold().TextColor(p.Text)
 					ui.Text(c, a.loadErr).FontSize(12).TextColor(p.Muted).TextAlign(ui.Center)
-					ui.Button(c, "重试").OnClick(func() { a.reloadList(true) })
+					ui.Button(c, locales.MiscRetry()).OnClick(func() { a.reloadList(true) })
 				})
 				return
 			}
 			if len(a.rows) == 0 {
-				title, hint := "这里空空如也", "新的邮件会第一时间出现在这里。"
+				title, hint := locales.ListEmptyTitle(), locales.ListEmptyHint()
 				if a.query != "" || a.filter != 0 {
-					title, hint = "没有匹配的邮件", "换个关键词，或清除筛选条件再试试。"
+					title, hint = locales.ListNoMatchTitle(), locales.ListNoMatchHint()
 				}
 				ui.Column(c).Fill().Center().Gap(6).Padding(30).Children(func() {
 					ui.Box(c).Size(64, 64).Radius(20).Center().Background(p.Chip).Children(func() {
@@ -90,7 +90,7 @@ func (a *App) listPane(c *ui.Context, p palette) {
 					ui.Text(c, title).FontSize(15).Bold().TextColor(p.Text)
 					ui.Text(c, hint).FontSize(12.5).TextColor(p.Faint).TextAlign(ui.Center).MaxWidth(250)
 					if a.query != "" || a.filter != 0 {
-						ui.Button(c, "清除筛选").OnClick(func() {
+						ui.Button(c, locales.ListClearFilters()).OnClick(func() {
 							a.query = ""
 							a.filter = 0
 							a.reloadList(true)
@@ -117,7 +117,7 @@ func (a *App) listPane(c *ui.Context, p palette) {
 
 		if a.more {
 			ui.Row(c).Padding(6, 10, 10, 10).Justify(ui.Center).Children(func() {
-				ui.Button(c, fmt.Sprintf("加载更多 (%d/%d)", len(a.msgs), a.total)).OnClick(func() {
+				ui.Button(c, locales.ListLoadMore(len(a.msgs), a.total)).OnClick(func() {
 					a.page++
 					a.reloadList(false)
 				})
@@ -130,18 +130,18 @@ func (a *App) viewTitle() string {
 	if a.view.Name != "" {
 		return a.view.Name
 	}
-	return "收件箱"
+	return locales.MiscInbox()
 }
 
 func (a *App) viewSubtitle() string {
-	parts := []string{fmt.Sprintf("%d 封邮件", a.total)}
+	parts := []string{locales.ListMailCount(a.total)}
 	if a.view.Kind == "folder" {
 		if acc := a.accountVM(a.view.AccountID); acc != nil {
 			parts = append(parts, acc.Name)
 		}
 	}
 	if a.query != "" {
-		parts = append(parts, "搜索“"+a.query+"”")
+		parts = append(parts, locales.ListSearching(a.query))
 	}
 	return joinParts(parts)
 }
@@ -181,29 +181,29 @@ func (a *App) listRow(c *ui.Context, p palette, i int) {
 
 	row.ContextMenu(func(menu *ui.Menu) {
 		starred := env.Flags.Flagged
-		label := "加星标"
+		label := locales.MiscStar()
 		if starred {
-			label = "取消星标"
+			label = locales.MiscUnstar()
 		}
 		if menu.Item(label).Chosen() {
 			a.deferAction(func() { a.toggleStar(m) })
 		}
-		readLabel := "标为未读"
+		readLabel := locales.MiscMarkUnread()
 		if !env.Flags.Seen {
-			readLabel = "标为已读"
+			readLabel = locales.MiscMarkRead()
 		}
 		if menu.Item(readLabel).Chosen() {
 			a.deferAction(func() { a.markRead(m, env.Flags.Seen) })
 		}
 		menu.Separator()
-		if menu.Item("归档").Chosen() {
+		if menu.Item(locales.MiscArchive()).Chosen() {
 			a.deferAction(func() { a.archiveMessage(m) })
 		}
-		if menu.Item("删除").Chosen() {
+		if menu.Item(locales.MiscDelete()).Chosen() {
 			a.deferAction(func() { a.deleteMessage(m) })
 		}
 		if acc := a.accountVM(m.AccountID); acc != nil && len(acc.Folders) > 0 {
-			menu.Submenu("移动到", func(sub *ui.Menu) {
+			menu.Submenu(locales.ListCtxMoveTo(), func(sub *ui.Menu) {
 				for _, f := range visibleFolders(acc.Folders) {
 					if f.Path == m.Path {
 						continue
@@ -292,7 +292,7 @@ func (a *App) listRow(c *ui.Context, p palette, i int) {
 						})
 					}
 					star := ui.ButtonBase(c).Size(22, 22).Radius(6).Center().
-						Label(map[bool]string{true: "取消星标", false: "加星标"}[env.Flags.Flagged])
+						Label(map[bool]string{true: locales.MiscUnstar(), false: locales.MiscStar()}[env.Flags.Flagged])
 					if env.Flags.Flagged {
 						star.Children(func() { ui.Icon(c, iconStarFill).FontSize(14).TextColor(p.Star) })
 					} else {

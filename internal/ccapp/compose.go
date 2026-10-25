@@ -2,7 +2,6 @@ package ccapp
 
 import (
 	"encoding/base64"
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -15,6 +14,7 @@ import (
 	"ccmail/internal/mailx"
 	"ccmail/internal/smtpx"
 	"ccmail/internal/store"
+	"ccmail/locales"
 )
 
 // Attachment is a file the user attached to the draft.
@@ -77,15 +77,14 @@ func (a *App) openCompose(mode string, ref *MsgRef) {
 			cs.To = addrLine(to)
 			cs.Subject = replySubject(a.msg.Subject)
 		case "forward":
-			cs.Subject = "转发：" + strings.TrimPrefix(strings.TrimPrefix(a.msg.Subject, "转发："), "Fwd: ")
+			cs.Subject = locales.ComposeForwardPrefix() + strings.TrimPrefix(strings.TrimPrefix(a.msg.Subject, locales.ComposeForwardPrefix()), "Fwd: ")
 		}
 	}
 	doc := richtext.NewDocument(richtext.NewText(""))
 	if a.prefs.QuoteReply && a.msg != nil && (mode == "reply" || mode == "replyAll" || mode == "forward") {
-		intro := fmt.Sprintf("在 %s，%s 写道：\n", quoteDate(a.msg.Date), displayName(a.msg.From))
+		intro := locales.ComposeOnWrote(quoteDate(a.msg.Date), displayName(a.msg.From))
 		if mode == "forward" {
-			intro = fmt.Sprintf("---------- 转发邮件 ----------\n发件人：%s\n日期：%s\n主题：%s\n\n",
-				displayName(a.msg.From), quoteDate(a.msg.Date), a.msg.Subject)
+			intro = locales.ComposeForwardHeader(displayName(a.msg.From), quoteDate(a.msg.Date), a.msg.Subject)
 		}
 		quoted := quotedText(a.msg)
 		doc.InsertText(intro)
@@ -97,10 +96,10 @@ func (a *App) openCompose(mode string, ref *MsgRef) {
 }
 
 func replySubject(s string) string {
-	if strings.HasPrefix(s, "Re:") || strings.HasPrefix(s, "回复：") || strings.HasPrefix(s, "回复:") {
+	if strings.HasPrefix(s, "Re:") || strings.HasPrefix(s, strings.TrimSpace(locales.ComposeReplyPrefix())) {
 		return s
 	}
-	return "Re: " + s
+	return locales.ComposeReplyPrefix() + s
 }
 
 var imageTag = regexp.MustCompile(`(?is)<img\b[^>]*>`)
@@ -108,7 +107,7 @@ var imageTag = regexp.MustCompile(`(?is)<img\b[^>]*>`)
 // quoteDate writes the original's date in full for a reply's attribution.
 func quoteDate(s string) string {
 	if t, ok := parseDate(s); ok {
-		return t.Format("2006年1月2日 15:04")
+		return locales.ComposeQuoteDate(t)
 	}
 	return fmtFullDate(s)
 }
@@ -150,13 +149,13 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 			// header
 			ui.Row(c).Padding(16, 18).Gap(10).AlignItems(ui.Center).Children(func() {
 				ui.Text(c, composeTitle(cs.Mode)).FontSize(15.5).Bold().TextColor(p.Text).Grow(1)
-				a.iconButton(c, iconClose, "关闭 (Esc)", p, func() { a.compose = nil })
+				a.iconButton(c, iconClose, locales.ComposeClose(), p, func() { a.compose = nil })
 			})
 			ui.Divider(c)
 
 			// fields
 			ui.Column(c).Children(func() {
-				a.composeField(c, p, "发件人", func() {
+				a.composeField(c, p, locales.ComposeFrom(), func() {
 					names := make([]string, 0, len(a.accounts))
 					chosen := ""
 					for i, acc := range a.accounts {
@@ -174,23 +173,23 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 						}
 					}
 					ui.Spacer(c)
-					ui.Button(c, "抄送").OnClick(func() { cs.ShowCc = !cs.ShowCc })
-					ui.Button(c, "密送").OnClick(func() { cs.ShowBcc = !cs.ShowBcc })
+					ui.Button(c, locales.ComposeCc()).OnClick(func() { cs.ShowCc = !cs.ShowCc })
+					ui.Button(c, locales.ComposeBcc()).OnClick(func() { cs.ShowBcc = !cs.ShowBcc })
 				})
-				a.composeField(c, p, "收件人", func() {
-					ui.TextInput(c, &cs.To).Placeholder("name@example.com，多人用逗号分隔").Grow(1)
+				a.composeField(c, p, locales.ComposeTo(), func() {
+					ui.TextInput(c, &cs.To).Placeholder(locales.ComposeToPlaceholder()).Grow(1)
 				})
 				if cs.ShowCc {
-					a.composeField(c, p, "抄送", func() {
+					a.composeField(c, p, locales.ComposeCc(), func() {
 						ui.TextInput(c, &cs.Cc).Grow(1)
 					})
 				}
 				if cs.ShowBcc {
-					a.composeField(c, p, "密送", func() {
+					a.composeField(c, p, locales.ComposeBcc(), func() {
 						ui.TextInput(c, &cs.Bcc).Grow(1)
 					})
 				}
-				a.composeField(c, p, "主题", func() {
+				a.composeField(c, p, locales.ComposeSubject(), func() {
 					ui.TextInput(c, &cs.Subject).Grow(1)
 				})
 			})
@@ -219,12 +218,12 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 						run()
 					}
 				}
-				tool(iconBold, "加粗 (⌘B)", f.Bold == richtext.FormatOn, cs.Doc.ToggleBold)
-				tool(iconItalic, "倾斜 (⌘I)", f.Italic == richtext.FormatOn, cs.Doc.ToggleItalic)
-				tool(iconUnderline, "下划线 (⌘U)", f.Underline == richtext.FormatOn, cs.Doc.ToggleUnderline)
+				tool(iconBold, locales.ComposeBold(), f.Bold == richtext.FormatOn, cs.Doc.ToggleBold)
+				tool(iconItalic, locales.ComposeItalic(), f.Italic == richtext.FormatOn, cs.Doc.ToggleItalic)
+				tool(iconUnderline, locales.ComposeUnderline(), f.Underline == richtext.FormatOn, cs.Doc.ToggleUnderline)
 				ui.Box(c).Width(1).Height(18).Background(p.Border).Margin(0, 6)
-				tool(iconList, "项目符号", f.Paragraph.List != richtext.NoList, func() { cs.Doc.ToggleList(richtext.Bullets) })
-				tool(iconClip, "添加附件", false, func() { a.pickAttachments() })
+				tool(iconList, locales.ComposeBullets(), f.Paragraph.List != richtext.NoList, func() { cs.Doc.ToggleList(richtext.Bullets) })
+				tool(iconClip, locales.ComposeAddAttachment(), false, func() { a.pickAttachments() })
 			})
 			ui.Divider(c)
 
@@ -244,7 +243,7 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 				rt.QuoteText = p.Muted
 				rt.QuoteBarWidth = 3
 				richtext.EditorBase(c, cs.Doc, richtext.EditorOptions{
-					Placeholder: "写下你想说的…",
+					Placeholder: locales.ComposePlaceholder(),
 					Theme:       rt,
 				}).Grow(1).Padding(12, 18)
 			})
@@ -257,7 +256,7 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 						chip.Children(func() {
 							ui.Icon(c, iconClip).FontSize(13).TextColor(p.Faint)
 							ui.Text(c, att.Name).FontSize(12).TextColor(p.Text).SingleLine().MaxWidth(180)
-							if ui.ButtonBase(c).Size(20, 20).Radius(6).Center().Label("移除附件").Children(func() {
+							if ui.ButtonBase(c).Size(20, 20).Radius(6).Center().Label(locales.ComposeRemoveAttachment()).Children(func() {
 								ui.Icon(c, iconClose).FontSize(12).TextColor(p.Faint)
 							}).Clicked() {
 								cs.Atts = append(cs.Atts[:i], cs.Atts[i+1:]...)
@@ -275,18 +274,18 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 			ui.Row(c).Padding(12, 16).Gap(8).AlignItems(ui.Center).Children(func() {
 				if cs.Sending {
 					ui.Spinner(c)
-					ui.Text(c, "正在发送…").FontSize(12).TextColor(p.Faint)
+					ui.Text(c, locales.ComposeSending()).FontSize(12).TextColor(p.Faint)
 				} else {
-					send := a.ctaBase(c, p, "发送").Disabled(cs.Sending)
+					send := a.ctaBase(c, p, locales.ComposeSend()).Disabled(cs.Sending)
 					send.Children(func() {
 						ui.Icon(c, iconSend).FontSize(14).TextColor(p.CTAText)
-						ui.Text(c, "发送").FontSize(13).Bold().TextColor(p.CTAText)
+						ui.Text(c, locales.ComposeSend()).FontSize(13).Bold().TextColor(p.CTAText)
 					})
 					send.OnClick(func() { a.sendCompose() })
-					ui.Button(c, "取消").OnClick(func() { a.compose = nil })
+					ui.Button(c, locales.MiscCancel()).OnClick(func() { a.compose = nil })
 				}
 				ui.Spacer(c)
-				ui.Text(c, "⌘ + Enter 发送 · 拖拽文件到正文以添加附件").FontSize(11).TextColor(p.Faint)
+				ui.Text(c, locales.ComposeSendHint()).FontSize(11).TextColor(p.Faint)
 			})
 		})
 		if c.Shortcut(ui.Cmd, ui.KeyEnter) {
@@ -301,13 +300,13 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 func composeTitle(mode string) string {
 	switch mode {
 	case "reply":
-		return "回复邮件"
+		return locales.ComposeReply()
 	case "replyAll":
-		return "回复全部"
+		return locales.ReaderReplyAll()
 	case "forward":
-		return "转发邮件"
+		return locales.ComposeForward()
 	default:
-		return "新邮件"
+		return locales.ComposeNew()
 	}
 }
 
@@ -347,7 +346,7 @@ func (a *App) pickAttachments() {
 	go func() {
 		paths, err := mygo.Dialog.Open(mygo.OpenDialogOptions{
 			Parent:   a.win,
-			Title:    "添加附件",
+			Title:    locales.ComposeAddAttachment(),
 			Multiple: true,
 		})
 		if err != nil || len(paths) == 0 {
@@ -370,11 +369,11 @@ func (a *App) sendCompose() {
 	}
 	to := parseRecipients(cs.To)
 	if len(to) == 0 {
-		cs.Err = "请填写收件人"
+		cs.Err = locales.ComposeNeedRecipient()
 		return
 	}
 	if cs.From < 0 || cs.From >= len(a.accounts) {
-		cs.Err = "请选择发件账号"
+		cs.Err = locales.ComposeNeedSender()
 		return
 	}
 	accountID := a.accounts[cs.From].ID
@@ -387,7 +386,7 @@ func (a *App) sendCompose() {
 	for _, f := range cs.Atts {
 		data, err := os.ReadFile(f.Path)
 		if err != nil {
-			cs.Err = "读取附件失败：" + err.Error()
+			cs.Err = locales.ComposeAttachReadFail() + err.Error()
 			return
 		}
 		atts = append(atts, smtpx.Attachment{
@@ -413,7 +412,7 @@ func (a *App) sendCompose() {
 		if acct == nil {
 			a.update(func() {
 				cs.Sending = false
-				cs.Err = "账号不存在"
+				cs.Err = locales.ComposeAccountMissing()
 			})
 			return
 		}
@@ -425,7 +424,7 @@ func (a *App) sendCompose() {
 				return
 			}
 			a.compose = nil
-			a.flash("邮件已发送", "success")
+			a.flash(locales.ComposeSent(), "success")
 		})
 	}()
 }

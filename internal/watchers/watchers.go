@@ -15,6 +15,7 @@ import (
 	"ccmail/internal/mailx"
 	"ccmail/internal/prefs"
 	"ccmail/internal/store"
+	"ccmail/locales"
 )
 
 // Status is one account's connection state.
@@ -111,7 +112,7 @@ func notifyNewMail(a *store.Account, rows []*mailx.Envelope) {
 	if !prefs.NotificationsEnabled() || !mygo.NotificationsSupported() {
 		return
 	}
-	body := fmt.Sprintf("「%s」收到新邮件", a.Name)
+	body := locales.NotifyNewMail(a.Name)
 	for _, m := range rows {
 		if !m.Flags.Seen {
 			subject := m.Subject

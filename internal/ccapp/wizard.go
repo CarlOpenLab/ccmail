@@ -6,6 +6,7 @@ import (
 	"github.com/egoist/mygo/ui"
 
 	"ccmail/internal/providers"
+	"ccmail/locales"
 )
 
 // Wizard is the add-account flow: pick a provider, fill in the form, connect.
@@ -49,14 +50,14 @@ func (a *App) wizardModal(c *ui.Context, p palette) {
 		ui.Column(c).Width(560).MaxHeight(640).Clip().Background(p.Popover).Radius(16).
 			Border(1, p.Border).Shadow(0, 22, 56, -12, p.Shadow).Children(func() {
 			ui.Row(c).Padding(16, 20).Gap(10).AlignItems(ui.Center).Children(func() {
-				title := "选择邮件服务商"
+				title := locales.WizardPickProvider()
 				if w.Step == 2 {
-					title = "登录邮箱"
+					title = locales.WizardLoginEmail()
 				} else if w.Step >= 3 {
-					title = "连接账号"
+					title = locales.WizardConnectAccount()
 				}
 				ui.Text(c, title).FontSize(15.5).Bold().TextColor(p.Text).Grow(1)
-				a.iconButton(c, iconClose, "关闭", p, func() { a.wizard = nil })
+				a.iconButton(c, iconClose, locales.MiscClose(), p, func() { a.wizard = nil })
 			})
 			ui.Divider(c)
 
@@ -80,7 +81,7 @@ func (a *App) wizardModal(c *ui.Context, p palette) {
 }
 
 func (a *App) wizardProviders(c *ui.Context, p palette, w *Wizard) {
-	ui.Text(c, "选择你使用的邮箱服务，下一步填写授权码。").FontSize(12.5).TextColor(p.Muted).
+	ui.Text(c, locales.WizardPickProviderHint()).FontSize(12.5).TextColor(p.Muted).
 		Margin(0, 0, 14, 0)
 	ui.Row(c).Gap(10).Wrap().Children(func() {
 		for _, pr := range providers.All() {
@@ -114,20 +115,20 @@ func (a *App) wizardForm(c *ui.Context, p palette, w *Wizard) {
 	}
 
 	ui.Form(c, func() {
-		ui.Field(c, "邮箱地址", func() {
+		ui.Field(c, locales.WizardEmail(), func() {
 			ui.TextInput(c, &w.Email).Placeholder("name@example.com")
 		})
-		ui.Field(c, "授权码", func() {
-			ui.TextInput(c, &w.Password).Placeholder("IMAP / SMTP 授权码或应用专用密码")
+		ui.Field(c, locales.WizardPassword(), func() {
+			ui.TextInput(c, &w.Password).Placeholder(locales.WizardPasswordPlaceholder())
 		})
-		ui.Field(c, "显示名称", func() {
-			ui.TextInput(c, &w.Name).Placeholder("例如：工作邮箱")
+		ui.Field(c, locales.WizardDisplayName(), func() {
+			ui.TextInput(c, &w.Name).Placeholder(locales.WizardNamePlaceholder())
 		})
-		ui.Field(c, "账号颜色", func() {
+		ui.Field(c, locales.WizardAccountColor(), func() {
 			ui.Row(c).Gap(6).Children(func() {
 				for _, hex := range accountColors {
 					hex := hex
-					sw := ui.Button(c, "").Size(22, 22).Radius(11).Padding(0).Label("颜色 " + hex)
+					sw := ui.Button(c, "").Size(22, 22).Radius(11).Padding(0).Label(locales.WizardColor() + hex)
 					sw.Background(ui.Hex(hex))
 					if strings.EqualFold(hex, w.Color) {
 						sw.Border(2, p.Text)
@@ -143,29 +144,29 @@ func (a *App) wizardForm(c *ui.Context, p palette, w *Wizard) {
 	}
 
 	ui.Row(c).Gap(8).Margin(6, 0, 0, 0).Children(func() {
-		ui.Button(c, "高级设置").OnClick(func() { w.Advanced = !w.Advanced })
+		ui.Button(c, locales.WizardAdvanced()).OnClick(func() { w.Advanced = !w.Advanced })
 		ui.Spacer(c)
-		ui.Button(c, "上一步").OnClick(func() { w.Step = 1; w.Err = "" })
-		a.cta(c, p, "连接并添加").OnClick(func() { a.startConnect(w) })
+		ui.Button(c, locales.WizardBack()).OnClick(func() { w.Step = 1; w.Err = "" })
+		a.cta(c, p, locales.WizardConnect()).OnClick(func() { a.startConnect(w) })
 	})
 
 	if w.Advanced {
 		ui.Divider(c).Margin(14, 0, 10, 0)
 		ui.Form(c, func() {
-			ui.Field(c, "IMAP 服务器", func() {
-				ui.TextInput(c, &w.IMAPHost).Placeholder("留空使用服务商预设")
+			ui.Field(c, locales.WizardImapServer(), func() {
+				ui.TextInput(c, &w.IMAPHost).Placeholder(locales.WizardAdvancedHint())
 			})
-			ui.Field(c, "IMAP 端口", func() {
+			ui.Field(c, locales.WizardImapPort(), func() {
 				ui.TextInput(c, &w.IMAPPort).Placeholder("993")
 			})
-			ui.Field(c, "SMTP 服务器", func() {
-				ui.TextInput(c, &w.SMTPHost).Placeholder("留空使用服务商预设")
+			ui.Field(c, locales.WizardSmtpServer(), func() {
+				ui.TextInput(c, &w.SMTPHost).Placeholder(locales.WizardAdvancedHint())
 			})
-			ui.Field(c, "SMTP 端口", func() {
+			ui.Field(c, locales.WizardSmtpPort(), func() {
 				ui.TextInput(c, &w.SMTPPort).Placeholder("465")
 			})
-			ui.Field(c, "登录用户名", func() {
-				ui.TextInput(c, &w.AuthUser).Placeholder("默认与邮箱地址相同")
+			ui.Field(c, locales.WizardLoginUser(), func() {
+				ui.TextInput(c, &w.AuthUser).Placeholder(locales.WizardDefaultFrom())
 			})
 		})
 	}
@@ -175,15 +176,15 @@ func (a *App) wizardConnecting(c *ui.Context, p palette, w *Wizard) {
 	ui.Column(c).Fill().Center().Gap(10).Padding(20).Children(func() {
 		if w.Busy {
 			ui.Spinner(c)
-			ui.Text(c, "正在连接 IMAP 验证凭据…").FontSize(13).TextColor(p.Muted)
-			ui.Text(c, "验证通过后会挂载账号并开始同步收件箱。").FontSize(12).TextColor(p.Faint)
+			ui.Text(c, locales.WizardConnecting()).FontSize(13).TextColor(p.Muted)
+			ui.Text(c, locales.WizardVerifyHint()).FontSize(12).TextColor(p.Faint)
 			return
 		}
 		ui.Icon(c, iconJunk).FontSize(28).TextColor(p.Danger)
-		ui.Text(c, "连接失败").FontSize(15).Bold().TextColor(p.Text)
+		ui.Text(c, locales.WizardConnectFailed()).FontSize(15).Bold().TextColor(p.Text)
 		ui.Text(c, w.Err).FontSize(12).TextColor(p.Muted).TextAlign(ui.Center).MaxWidth(380)
 		ui.Row(c).Gap(8).Margin(10, 0, 0, 0).Children(func() {
-			ui.Button(c, "返回修改").OnClick(func() {
+			ui.Button(c, locales.WizardEditMore()).OnClick(func() {
 				w.Step = 2
 				w.Busy = false
 			})
@@ -196,17 +197,17 @@ func (a *App) wizardDone(c *ui.Context, p palette, w *Wizard) {
 		ui.Box(c).Size(56, 56).Radius(28).Center().Background(p.Success.Alpha(0.16)).Children(func() {
 			ui.Icon(c, iconCheck).FontSize(26).TextColor(p.Success)
 		})
-		ui.Text(c, "账号已添加").FontSize(15).Bold().TextColor(p.Text)
+		ui.Text(c, locales.WizardConnected()).FontSize(15).Bold().TextColor(p.Text)
 		if w.Warning != "" {
 			ui.Text(c, w.Warning).FontSize(12).TextColor(p.Warning).TextAlign(ui.Center).MaxWidth(420)
 		}
-		ui.Text(c, "收件箱正在后台同步，新邮件会实时出现。").FontSize(12.5).TextColor(p.Faint)
+		ui.Text(c, locales.WizardSyncingHint()).FontSize(12.5).TextColor(p.Faint)
 		ui.Row(c).Gap(8).Margin(10, 0, 0, 0).Children(func() {
-			a.cta(c, p, "打开收件箱").OnClick(func() {
+			a.cta(c, p, locales.WizardOpenInbox()).OnClick(func() {
 				a.wizard = nil
-				a.navigate(ViewSel{Kind: "unified", Name: "全部收件箱"})
+				a.navigate(ViewSel{Kind: "unified", Name: locales.MiscUnifiedInbox()})
 			})
-			ui.Button(c, "关闭").OnClick(func() { a.wizard = nil })
+			ui.Button(c, locales.MiscClose()).OnClick(func() { a.wizard = nil })
 		})
 	})
 }
@@ -217,11 +218,11 @@ func (a *App) startConnect(w *Wizard) {
 		return
 	}
 	if !strings.Contains(w.Email, "@") {
-		w.Err = "请填写有效的邮箱地址"
+		w.Err = locales.ComposeBadEmail()
 		return
 	}
 	if w.Password == "" {
-		w.Err = "请填写授权码"
+		w.Err = locales.WizardNeedPassword()
 		return
 	}
 	w.Err = ""

@@ -17,6 +17,7 @@ import (
 	"ccmail/internal/store"
 	"ccmail/internal/version"
 	"ccmail/internal/watchers"
+	"ccmail/locales"
 )
 
 var mainWindow *mygo.Window
@@ -31,6 +32,10 @@ func main() {
 	_ = os.RemoveAll(store.DemoFiles)
 
 	app := ccapp.New()
+	mygo.App.SetLanguages("en", "zh-Hans")
+	if lang := ccapp.StartupLocale(); lang != "" && lang != "auto" {
+		mygo.App.SetLocale(lang)
+	}
 	app.SubscribeToWorkers()
 	app.ApplyStoredTheme()
 
@@ -79,14 +84,14 @@ func main() {
 
 func setupTray(trayIcon []byte) {
 	menu := mygo.NewMenu([]*mygo.MenuItem{
-		{Label: "显示 ccmail", Click: func(item *mygo.MenuItem, win *mygo.Window) {
+		{Label: locales.TrayShow(), Click: func(item *mygo.MenuItem, win *mygo.Window) {
 			if mainWindow != nil {
 				mainWindow.Show()
 			}
 			mygo.App.Focus()
 		}},
 		mygo.Separator(),
-		{Label: "退出", Click: func(item *mygo.MenuItem, win *mygo.Window) {
+		{Label: locales.TrayQuit(), Click: func(item *mygo.MenuItem, win *mygo.Window) {
 			mygo.App.Exit(0)
 		}},
 	})

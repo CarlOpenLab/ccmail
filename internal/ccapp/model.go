@@ -8,6 +8,7 @@ import (
 
 	"ccmail/internal/mailx"
 	"ccmail/internal/watchers"
+	"ccmail/locales"
 )
 
 // Folder is one mailbox of an account.
@@ -59,6 +60,7 @@ func (m *MsgRef) Key() string {
 // Prefs mirrors the stored local preferences.
 type Prefs struct {
 	Theme         string // auto | light | dark
+	Language      string // auto | en | zh-Hans
 	Wash          string // plain | rex | mist | meadow | dusk
 	SidebarShut   bool
 	Density       string // cozy | compact
@@ -143,7 +145,7 @@ func New() *App {
 	}
 	a.prefs = loadPrefs()
 	a.listSel = -1
-	a.view = ViewSel{Kind: "unified", Name: "全部收件箱"}
+	a.view = ViewSel{Kind: "unified", Name: locales.MiscUnifiedInbox()}
 	a.accounts = loadAccounts()
 	a.sidebarSel = "unified"
 	return a

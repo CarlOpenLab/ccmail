@@ -8,6 +8,7 @@ import (
 	"github.com/egoist/mygo/ui"
 
 	"ccmail/internal/providers"
+	"ccmail/locales"
 )
 
 // View builds the window: title bar, sidebar, and the card that holds the
@@ -124,10 +125,10 @@ func (a *App) onboarding(c *ui.Context, p palette) {
 		ui.Box(c).Size(96, 96).Radius(28).Background(p.Chip).Center().Children(func() {
 			ui.Icon(c, iconMail).FontSize(38).TextColor(p.Accent)
 		})
-		ui.Text(c, "欢迎来到 ccmail").FontSize(19).Bold().TextColor(p.Text)
-		ui.Text(c, "添加你的第一个邮箱账号（QQ、Gmail、163、Outlook、iCloud 或自定义 IMAP），开始收发邮件。").
+		ui.Text(c, locales.OnboardingTitle()).FontSize(19).Bold().TextColor(p.Text)
+		ui.Text(c, locales.OnboardingHint()).
 			FontSize(13).TextColor(p.Muted).TextAlign(ui.Center).MaxWidth(410).LineHeight(1.7)
-		a.cta(c, p, "添加邮箱账号").MinWidth(160).OnClick(func() { a.openWizard() })
+		a.cta(c, p, locales.SidebarAddAccount()).MinWidth(160).OnClick(func() { a.openWizard() })
 	})
 }
 
@@ -152,18 +153,18 @@ func (a *App) titlebar(c *ui.Context, p palette, bar ui.TitleBar, compact, narro
 			if !compact {
 				a.accountDots(c, p)
 			}
-			a.iconButton(c, iconRefresh, "刷新列表", p, func() {
+			a.iconButton(c, iconRefresh, locales.TitlebarRefresh(), p, func() {
 				a.reloadList(true)
 				a.refreshAccounts()
 			})
-			a.iconButton(c, iconMoon, "切换深浅色", p, func() { a.toggleTheme() })
-			a.iconButton(c, iconSettings, "设置", p, func() { a.settings = true })
+			a.iconButton(c, iconMoon, locales.TitlebarToggleTheme(), p, func() { a.toggleTheme() })
+			a.iconButton(c, iconSettings, locales.MiscSettings(), p, func() { a.settings = true })
 			ui.Box(c).Width(1).Height(18).Background(p.Border)
-			compose := a.ctaBase(c, p, "写邮件").Padding(0, 13).Gap(7)
+			compose := a.ctaBase(c, p, locales.TitlebarCompose()).Padding(0, 13).Gap(7)
 			compose.Children(func() {
 				ui.Icon(c, iconSend).FontSize(15).TextColor(p.CTAText)
 				if !compact {
-					ui.Text(c, "写邮件").FontSize(13).Bold().TextColor(p.CTAText)
+					ui.Text(c, locales.TitlebarCompose()).FontSize(13).Bold().TextColor(p.CTAText)
 				}
 			})
 			compose.OnClick(func() { a.openCompose("new", nil) })
@@ -281,14 +282,14 @@ func (a *App) sidebarToggle(c *ui.Context, p palette, narrow bool) {
 		btn.Background(p.HoverStrong)
 	}
 	if narrow {
-		btn.Label("打开侧栏").Tooltip("打开侧栏 (⌘B)")
+		btn.Label(locales.TitlebarOpenSidebar()).Tooltip(locales.TitlebarOpenSidebar() + " (⌘B)")
 		btn.Children(func() { ui.Icon(c, iconMenu).FontSize(18).TextColor(p.Muted) })
 		btn.OnClick(func() { a.sidebarOpen = !a.sidebarOpen })
 		return
 	}
 	shut := a.prefs.SidebarShut
-	btn.Label(map[bool]string{true: "展开侧栏", false: "收起侧栏"}[shut]).
-		Tooltip(map[bool]string{true: "展开侧栏 (⌘B)", false: "收起侧栏 (⌘B)"}[shut])
+	btn.Label(map[bool]string{true: locales.TitlebarExpandSidebar(), false: locales.TitlebarCollapseSidebar()}[shut]).
+		Tooltip(map[bool]string{true: locales.TitlebarExpandSidebar() + " (⌘B)", false: locales.TitlebarCollapseSidebar() + " (⌘B)"}[shut])
 	icon := iconSidebarCollapse
 	if shut {
 		icon = iconSidebarExpand
@@ -321,8 +322,8 @@ func (a *App) searchBar(c *ui.Context, p palette, compact, narrow bool) {
 		Padding(0, 10).AlignItems(ui.Center)
 	box.Children(func() {
 		ui.Icon(c, iconSearch).FontSize(15).TextColor(p.Faint)
-		field := ui.TextInputBase(c, &a.query).Grow(1).Placeholder("搜索邮件…").
-			Label("搜索邮件").Bind(&a.search)
+		field := ui.TextInputBase(c, &a.query).Grow(1).Placeholder(locales.TitlebarSearchPlaceholder()).
+			Label(locales.TitlebarSearch()).Bind(&a.search)
 		if field.Changed() {
 			// type-ahead: search once typing pauses
 			a.queryAt = time.Now()
@@ -334,7 +335,7 @@ func (a *App) searchBar(c *ui.Context, p palette, compact, narrow bool) {
 			a.reloadList(true)
 		}
 		if a.query != "" {
-			clear := ui.ButtonBase(c).Label("清空搜索").Tooltip("清空搜索").Size(20, 20).Radius(10).Center()
+			clear := ui.ButtonBase(c).Label(locales.TitlebarClearSearch()).Tooltip(locales.TitlebarClearSearch()).Size(20, 20).Radius(10).Center()
 			clear.Children(func() { ui.Icon(c, iconClose).FontSize(12).TextColor(p.Faint) })
 			clear.OnClick(func() {
 				a.query = ""

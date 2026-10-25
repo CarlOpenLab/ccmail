@@ -7,6 +7,7 @@ import (
 	"github.com/egoist/mygo/ui"
 
 	"ccmail/internal/version"
+	"ccmail/locales"
 )
 
 var accountColors = []string{
@@ -29,16 +30,16 @@ func (a *App) settingsModal(c *ui.Context, p palette) {
 			// one header owns the title and the close button, top right
 			ui.Row(c).Height(48).Shrink(0).Padding(0, 12, 0, 20).Gap(10).
 				AlignItems(ui.Center).Children(func() {
-				ui.Text(c, "设置").FontSize(14.5).Bold().TextColor(p.Text)
-				ui.Text(c, "更改会立即生效").FontSize(11.5).TextColor(p.Faint)
+				ui.Text(c, locales.MiscSettings()).FontSize(14.5).Bold().TextColor(p.Text)
+				ui.Text(c, locales.SettingsApplyNow()).FontSize(11.5).TextColor(p.Faint)
 				ui.Spacer(c)
-				a.iconButton(c, iconClose, "关闭设置", p, func() { a.settings = false })
+				a.iconButton(c, iconClose, locales.SettingsClose(), p, func() { a.settings = false })
 			})
 			ui.Divider(c)
 
 			ui.Row(c).Grow(1).MinHeight(0).AlignItems(ui.Stretch).Children(func() {
 				ui.Column(c).Width(180).Shrink(0).Padding(8, 8).Gap(2).Children(func() {
-					for i, item := range [][2]string{{"账号", "user"}, {"外观", "palette"}, {"快捷键", "keyboard"}, {"关于", "mail"}} {
+					for i, item := range [][2]string{{locales.SettingsTabAccounts(), "user"}, {locales.SettingsTabAppearance(), "palette"}, {locales.ReaderShortcuts(), "keyboard"}, {locales.SettingsTabAbout(), "mail"}} {
 						i := i
 						row := ui.ButtonBase(c).Height(34).Padding(0, 10).Gap(10).Radius(8).Label(item[0])
 						switch {
@@ -94,9 +95,9 @@ func groupTitle(c *ui.Context, p palette, text string) {
 }
 
 func (a *App) settingsAccounts(c *ui.Context, p palette) {
-	groupTitle(c, p, "已挂载的账号")
+	groupTitle(c, p, locales.SettingsMountedAccounts())
 	if len(a.accounts) == 0 {
-		ui.Text(c, "还没有添加任何邮箱账号。").FontSize(13).TextColor(p.Muted)
+		ui.Text(c, locales.SettingsNoAccounts()).FontSize(13).TextColor(p.Muted)
 	}
 	for i, acc := range a.accounts {
 		acc := acc
@@ -117,7 +118,7 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 					ui.Box(c).Size(7, 7).Radius(4).Background(statusColor(p, acc.Status))
 					ui.Text(c, statusLabel(acc.Status)).FontSize(11).TextColor(p.Faint)
 				})
-				if ui.ButtonBase(c).Size(28, 28).Radius(8).Center().Label("移除账号").Tooltip("移除账号").
+				if ui.ButtonBase(c).Size(28, 28).Radius(8).Center().Label(locales.SettingsRemoveAccount()).Tooltip(locales.SettingsRemoveAccount()).
 					Children(func() { ui.Icon(c, iconTrash).FontSize(15).TextColor(p.Danger) }).Clicked() {
 					a.confirmRemove(acc)
 				}
@@ -125,7 +126,7 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 			ui.Row(c).Gap(6).AlignItems(ui.Center).Children(func() {
 				for _, hex := range accountColors {
 					hex := hex
-					sw := ui.ButtonBase(c).Size(20, 20).Radius(10).Label("颜色 " + hex)
+					sw := ui.ButtonBase(c).Size(20, 20).Radius(10).Label(locales.WizardColor() + hex)
 					sw.Background(ui.Hex(hex))
 					if strings.EqualFold(hex, acc.Color) {
 						sw.Shadow(0, 0, 0, 2, p.Text)
@@ -135,8 +136,8 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 					})
 				}
 				ui.Spacer(c)
-				ui.ButtonBase(c).Height(24).Padding(0, 8).Radius(6).Label("编辑账号").Children(func() {
-					ui.Text(c, "编辑").FontSize(11.5).TextColor(p.Muted)
+				ui.ButtonBase(c).Height(24).Padding(0, 8).Radius(6).Label(locales.SettingsEditAccount()).Children(func() {
+					ui.Text(c, locales.SettingsEdit()).FontSize(11.5).TextColor(p.Muted)
 				}).OnClick(func() {
 					a.editAccount, a.editName, a.editColor = acc.ID, acc.Name, acc.Color
 				})
@@ -147,14 +148,14 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 			if a.editAccount == acc.ID {
 				ui.Column(c).Gap(8).Padding(4, 0, 0, 0).Children(func() {
 					ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-						ui.Text(c, "显示名称").FontSize(11.5).TextColor(p.Faint).Width(60)
+						ui.Text(c, locales.WizardDisplayName()).FontSize(11.5).TextColor(p.Faint).Width(60)
 						ui.TextInput(c, &a.editName).Grow(1)
 					})
 					ui.Row(c).Gap(6).AlignItems(ui.Center).Children(func() {
-						ui.Text(c, "账号颜色").FontSize(11.5).TextColor(p.Faint).Width(60)
+						ui.Text(c, locales.WizardAccountColor()).FontSize(11.5).TextColor(p.Faint).Width(60)
 						for _, hex := range accountColors {
 							hex := hex
-							sw := ui.ButtonBase(c).Size(20, 20).Radius(10).Label("颜色 " + hex)
+							sw := ui.ButtonBase(c).Size(20, 20).Radius(10).Label(locales.WizardColor() + hex)
 							sw.Background(ui.Hex(hex))
 							if strings.EqualFold(hex, a.editColor) {
 								sw.Border(2, p.Text)
@@ -162,12 +163,12 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 							sw.OnClick(func() { a.editColor = hex })
 						}
 						ui.Spacer(c)
-						ui.Button(c, "取消").OnClick(func() { a.editAccount = "" })
-						a.cta(c, p, "保存").OnClick(func() {
+						ui.Button(c, locales.MiscCancel()).OnClick(func() { a.editAccount = "" })
+						a.cta(c, p, locales.MiscSave()).OnClick(func() {
 							name := strings.TrimSpace(a.editName)
 							a.patchAccount(acc.ID, name, a.editColor)
 							a.editAccount = ""
-							a.flash("账号已更新", "success")
+							a.flash(locales.SettingsAccountUpdated(), "success")
 						})
 					})
 				})
@@ -175,32 +176,32 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 		})
 	}
 
-	groupTitle(c, p, "数据与缓存")
+	groupTitle(c, p, locales.SettingsDataCache())
 	ui.Divider(c)
 	ui.Row(c).Padding(4, 0, 12, 0).Gap(12).AlignItems(ui.Center).Children(func() {
 		ui.Column(c).Grow(1).Gap(2).Children(func() {
-			ui.Text(c, "邮件缓存").FontSize(13).Bold().TextColor(p.Text)
-			ui.Text(c, "清空已缓存的正文与附件；账号和远端邮件不受影响，下次打开会重新拉取。").
+			ui.Text(c, locales.SettingsMailCache()).FontSize(13).Bold().TextColor(p.Text)
+			ui.Text(c, locales.SettingsClearHint()).
 				FontSize(11.5).TextColor(p.Faint).LineHeight(1.5)
 		})
 		if a.clearAsk {
-			ui.Button(c, "确认清除").OnClick(func() {
+			ui.Button(c, locales.SettingsClearConfirm()).OnClick(func() {
 				a.clearAsk = false
 				go func() {
 					a.update(func() { a.clearCache() })
 				}()
 			})
-			ui.Button(c, "取消").OnClick(func() { a.clearAsk = false })
+			ui.Button(c, locales.MiscCancel()).OnClick(func() { a.clearAsk = false })
 		} else {
-			ui.Button(c, "清除").OnClick(func() { a.clearAsk = true })
+			ui.Button(c, locales.SettingsClear()).OnClick(func() { a.clearAsk = true })
 		}
 	})
 
 	ui.Row(c).Gap(8).Margin(4, 0, 0, 0).Children(func() {
-		add := a.ctaBase(c, p, "添加账号")
+		add := a.ctaBase(c, p, locales.SettingsAddAccount())
 		add.Children(func() {
 			ui.Icon(c, iconPlus).FontSize(14).TextColor(p.CTAText)
-			ui.Text(c, "添加账号").FontSize(13).Bold().TextColor(p.CTAText)
+			ui.Text(c, locales.SettingsAddAccount()).FontSize(13).Bold().TextColor(p.CTAText)
 		})
 		add.OnClick(func() {
 			a.wizard = newWizard()
@@ -213,9 +214,9 @@ func (a *App) confirmRemove(acc *AccountVM) {
 		res, err := mygo.Dialog.Message(mygo.MessageOptions{
 			Parent:  a.win,
 			Type:    mygo.MessageWarning,
-			Message: "移除 " + acc.Name + "？",
-			Detail:  "本机缓存会一并清理，邮箱服务器上的邮件不受影响。",
-			Buttons: []string{"移除", "取消"},
+			Message: locales.SettingsRemovePrefix() + acc.Name + locales.MiscQuestion(),
+			Detail:  locales.SettingsRemoveWarn(),
+			Buttons: []string{locales.SettingsRemove(), locales.MiscCancel()},
 		})
 		if err != nil || res.Button != 0 {
 			return
@@ -225,10 +226,10 @@ func (a *App) confirmRemove(acc *AccountVM) {
 }
 
 func (a *App) settingsAppearance(c *ui.Context, p palette) {
-	groupTitle(c, p, "主题")
-	themes := []string{"跟随系统", "浅色", "深色"}
+	groupTitle(c, p, locales.SettingsTheme())
+	themes := []string{locales.SettingsFollowSystem(), locales.SettingsLight(), locales.SettingsDark()}
 	idx := map[string]int{"auto": 0, "light": 1, "dark": 2}[a.prefs.Theme]
-	seg := ui.Segmented(c, &idx, themes...).Label("主题").AlignSelf(ui.Start)
+	seg := ui.Segmented(c, &idx, themes...).Label(locales.SettingsTheme()).AlignSelf(ui.Start)
 	if seg.Changed() {
 		a.prefs.Theme = map[int]string{0: "auto", 1: "light", 2: "dark"}[idx]
 		a.savePrefs()
@@ -236,7 +237,17 @@ func (a *App) settingsAppearance(c *ui.Context, p palette) {
 		a.loadBody()
 	}
 
-	groupTitle(c, p, "窗口底色")
+	groupTitle(c, p, locales.SettingsLanguage())
+	langs := []string{locales.SettingsFollowSystem(), "English", "简体中文"}
+	langIdx := map[string]int{"auto": 0, "en": 1, "zh-Hans": 2}[a.prefs.Language]
+	langSeg := ui.Segmented(c, &langIdx, langs...).Label(locales.SettingsLanguage()).AlignSelf(ui.Start)
+	if langSeg.Changed() {
+		a.prefs.Language = map[int]string{0: "auto", 1: "en", 2: "zh-Hans"}[langIdx]
+		a.savePrefs()
+		mygo.App.SetLocale(map[bool]string{true: "", false: a.prefs.Language}[a.prefs.Language == "auto"])
+	}
+
+	groupTitle(c, p, locales.SettingsWindowBackground())
 	ui.Row(c).Gap(10).Children(func() {
 		for _, w := range washPresets {
 			w := w
@@ -261,22 +272,22 @@ func (a *App) settingsAppearance(c *ui.Context, p palette) {
 		}
 	})
 
-	groupTitle(c, p, "列表")
-	densities := []string{"宽松", "紧凑"}
+	groupTitle(c, p, locales.SettingsDensityList())
+	densities := []string{locales.SettingsDensityRoomy(), locales.SettingsDensityCompact()}
 	d := 0
 	if a.prefs.Density == "compact" {
 		d = 1
 	}
-	if ui.Segmented(c, &d, densities...).Label("列表密度").AlignSelf(ui.Start).Changed() {
+	if ui.Segmented(c, &d, densities...).Label(locales.SettingsDensity()).AlignSelf(ui.Start).Changed() {
 		a.prefs.Density = map[int]string{0: "cozy", 1: "compact"}[d]
 		a.savePrefs()
 	}
 
-	groupTitle(c, p, "阅读与通知")
-	a.prefToggle(c, p, "打开邮件后标为已读", &a.prefs.MarkRead)
-	a.prefToggle(c, p, "新邮件桌面通知", &a.prefs.Notifications)
-	a.prefToggle(c, p, "自动加载远程图片", &a.prefs.AutoImages)
-	a.prefToggle(c, p, "回复时引用原文", &a.prefs.QuoteReply)
+	groupTitle(c, p, locales.SettingsReading())
+	a.prefToggle(c, p, locales.SettingsMarkReadOnOpen(), &a.prefs.MarkRead)
+	a.prefToggle(c, p, locales.SettingsNotifications(), &a.prefs.Notifications)
+	a.prefToggle(c, p, locales.SettingsAutoLoadImages(), &a.prefs.AutoImages)
+	a.prefToggle(c, p, locales.SettingsQuoteReply(), &a.prefs.QuoteReply)
 }
 
 func (a *App) prefToggle(c *ui.Context, p palette, label string, field *bool) {
@@ -289,18 +300,18 @@ func (a *App) prefToggle(c *ui.Context, p palette, label string, field *bool) {
 }
 
 func (a *App) settingsShortcuts(c *ui.Context, p palette) {
-	groupTitle(c, p, "键盘")
+	groupTitle(c, p, locales.SettingsTabShortcuts())
 	rows := [][2]string{
-		{"J / K", "下一封 / 上一封"},
-		{"Enter", "打开选中的邮件"},
-		{"N", "写一封新邮件"},
-		{"R / A / F", "回复 / 回复全部 / 转发"},
-		{"S", "加星标"},
-		{"E", "归档"},
-		{"⌫", "删除"},
-		{"/ 或 ⌘K", "搜索邮件"},
-		{"Esc", "关闭阅读区或对话框"},
-		{"?", "打开快捷键"},
+		{"J / K", locales.SettingsScNav()},
+		{"Enter", locales.SettingsScOpen()},
+		{"N", locales.SettingsScCompose()},
+		{"R / A / F", locales.SettingsScReply()},
+		{"S", locales.MiscStar()},
+		{"E", locales.MiscArchive()},
+		{"⌫", locales.MiscDelete()},
+		{locales.SettingsScSearchKey(), locales.TitlebarSearch()},
+		{"Esc", locales.SettingsScClose()},
+		{"?", locales.SettingsOpenShortcuts()},
 	}
 	for _, row := range rows {
 		ui.Row(c).Padding(8, 4).Gap(16).AlignItems(ui.Center).Children(func() {
@@ -318,8 +329,8 @@ func (a *App) settingsAbout(c *ui.Context, p palette) {
 			ui.Icon(c, iconMail).FontSize(32).TextColor(p.AccentText)
 		})
 		ui.Text(c, appName).FontSize(19).Bold().TextColor(p.Text)
-		ui.Textf(c, "v%s · 多账号 IMAP / SMTP 邮件客户端", version.Version).FontSize(12).TextColor(p.Faint)
-		ui.Text(c, "基于 Go + mygo 原生控件构建：没有 webview，没有前端构建；凭据以 AES-256-GCM 加密存储本机，无统计、无遥测。").
+		ui.Text(c, locales.SettingsAboutTagline(version.Version)).FontSize(12).TextColor(p.Faint)
+		ui.Text(c, locales.SettingsAboutBody()).
 			FontSize(12.5).TextColor(p.Muted).TextAlign(ui.Center).MaxWidth(420).LineHeight(1.7).Margin(8, 0, 0)
 	})
 }
@@ -327,15 +338,15 @@ func (a *App) settingsAbout(c *ui.Context, p palette) {
 func statusLabel(status string) string {
 	switch status {
 	case "online":
-		return "在线"
+		return locales.SettingsOnline()
 	case "connecting":
-		return "连接中"
+		return locales.SettingsConnecting()
 	case "offline":
-		return "离线"
+		return locales.SettingsOffline()
 	case "error":
-		return "连接失败"
+		return locales.WizardConnectFailed()
 	default:
-		return "未连接"
+		return locales.SettingsNotConnected()
 	}
 }
 
@@ -357,7 +368,7 @@ var washPresets = []struct {
 	ID   string
 	Name string
 }{
-	{"plain", "纯色"},
+	{"plain", locales.SettingsWashPlain()},
 	{"rex", "Rex"},
 	{"mist", "Mist"},
 	{"meadow", "Meadow"},

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"ccmail/locales"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -22,21 +23,21 @@ func (a *App) sidebar(c *ui.Context, p palette, compact bool) {
 		}
 		ui.Column(c).Width(a.sidebarW).FillHeight().Gap(4).Children(func() {
 			side := ui.Sidebar(c, &a.sidebarSel, func() {
-				ui.SidebarSection(c, "智能视图", nil, func() {
-					item := ui.SidebarItem(c, "unified", iconInbox, "全部收件箱")
+				ui.SidebarSection(c, locales.SidebarSmartViews(), nil, func() {
+					item := ui.SidebarItem(c, "unified", iconInbox, locales.MiscUnifiedInbox())
 					if a.unreadTotal > 0 {
 						item.Children(func() {
 							bg, fg := p.badgeColors()
 							ui.Badge(c, strconv.Itoa(a.unreadTotal)).Background(bg).TextColor(fg)
 						})
 					}
-					ui.SidebarItem(c, "flagged", iconStar, "星标邮件")
+					ui.SidebarItem(c, "flagged", iconStar, locales.MiscStarred())
 				})
 
 				if len(a.accounts) == 0 {
 					return
 				}
-				ui.SidebarSection(c, "邮箱", nil, func() {
+				ui.SidebarSection(c, locales.SidebarMailboxes(), nil, func() {
 					for _, acc := range a.accounts {
 						open := a.sectionOpen(acc.ID)
 						ui.SidebarSection(c, acc.Name, open, func() {
@@ -56,24 +57,24 @@ func (a *App) sidebar(c *ui.Context, p palette, compact bool) {
 						})
 					}
 				})
-			}).Grow(1).Label("侧栏").Background(ui.Transparent)
+			}).Grow(1).Label(locales.SidebarAriaLabel()).Background(ui.Transparent)
 
 			if side.Changed() {
 				a.sidebarChanged()
 			}
 
 			foot := ui.ButtonBase(c).Height(32).Radius(8).FillWidth().Center().Gap(6).
-				Label("添加邮箱账号").Background(p.Card).Border(1, p.Border)
+				Label(locales.SidebarAddAccount()).Background(p.Card).Border(1, p.Border)
 			if foot.Hovered() {
 				foot.Background(p.BtnHover)
 			}
 			foot.Children(func() {
 				ui.Icon(c, iconPlus).FontSize(14).TextColor(p.Muted)
-				ui.Text(c, "添加邮箱账号").FontSize(12.5).TextColor(p.Text)
+				ui.Text(c, locales.SidebarAddAccount()).FontSize(12.5).TextColor(p.Text)
 			})
 			foot.OnClick(func() { a.openWizard() })
 
-			ui.Textf(c, "%s · IMAP / SMTP 多账号", appName).FontSize(11).
+			ui.Text(c, locales.SidebarCaption(appName)).FontSize(11).
 				TextColor(p.Faint).TextAlign(ui.Center)
 		})
 	})
@@ -113,8 +114,8 @@ func (a *App) sidebarRail(c *ui.Context, p palette) {
 				// the expanded list starts under its section title: keep the
 				// first icon on the same line when the labels go away
 				ui.Box(c).Height(32)
-				item("unified", iconInbox, "全部收件箱")
-				item("flagged", iconStar, "星标邮件")
+				item("unified", iconInbox, locales.MiscUnifiedInbox())
+				item("flagged", iconStar, locales.MiscStarred())
 				for _, acc := range a.accounts {
 					if len(acc.Folders) > 0 {
 						rule()
@@ -131,7 +132,7 @@ func (a *App) sidebarRail(c *ui.Context, p palette) {
 		})
 
 		add := ui.ButtonBase(c).Size(size, size).Radius(7).Center().
-			Label("添加邮箱账号").Tooltip("添加邮箱账号")
+			Label(locales.SidebarAddAccount()).Tooltip(locales.SidebarAddAccount())
 		if add.Hovered() {
 			add.Background(p.Hover)
 		}
@@ -183,9 +184,9 @@ func (a *App) sidebarChanged() {
 	id := a.sidebarSel
 	switch {
 	case id == "unified":
-		a.navigate(ViewSel{Kind: "unified", Name: "全部收件箱"})
+		a.navigate(ViewSel{Kind: "unified", Name: locales.MiscUnifiedInbox()})
 	case id == "flagged":
-		a.navigate(ViewSel{Kind: "flagged", Name: "星标邮件"})
+		a.navigate(ViewSel{Kind: "flagged", Name: locales.MiscStarred()})
 	case strings.HasPrefix(id, "folder/"):
 		parts := strings.SplitN(id, "/", 3)
 		if len(parts) != 3 {

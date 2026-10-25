@@ -8,6 +8,7 @@ import (
 	"unicode"
 
 	"ccmail/internal/mailx"
+	"ccmail/locales"
 )
 
 func itoa(n int) string { return strconv.Itoa(n) }
@@ -50,11 +51,11 @@ func fmtListDate(s string) string {
 	case days == 0:
 		return hm
 	case days == 1:
-		return "昨天"
+		return locales.DateYesterday()
 	case days > 0 && days < 7:
-		return [...]string{"周日", "周一", "周二", "周三", "周四", "周五", "周六"}[int(t.Weekday())]
+		return [...]string{locales.DateSun(), locales.DateMon(), locales.DateTue(), locales.DateWed(), locales.DateThu(), locales.DateFri(), locales.DateSat()}[int(t.Weekday())]
 	case t.Year() == now.Year():
-		return fmt.Sprintf("%d月%d日", int(t.Month()), t.Day())
+		return locales.DateMonthDay(t)
 	default:
 		return fmt.Sprintf("%d/%d/%d", t.Year(), int(t.Month()), t.Day())
 	}
@@ -63,20 +64,20 @@ func fmtListDate(s string) string {
 func dateGroupLabel(s string) string {
 	t, ok := parseDate(s)
 	if !ok {
-		return "更早"
+		return locales.DateEarlier()
 	}
 	days := int(startOfDay(time.Now()).Sub(startOfDay(t)).Hours() / 24)
 	switch {
 	case days <= 0:
-		return "今天"
+		return locales.DateToday()
 	case days == 1:
-		return "昨天"
+		return locales.DateYesterday()
 	case days < 7:
-		return "本周"
+		return locales.DateThisWeek()
 	case days < 30:
-		return "本月"
+		return locales.DateThisMonth()
 	default:
-		return "更早"
+		return locales.DateEarlier()
 	}
 }
 
@@ -89,11 +90,11 @@ func fmtFullDate(s string) string {
 	hm := t.Format("15:04")
 	switch {
 	case days == 0:
-		return "今天 " + hm
+		return locales.DateToday() + " " + hm
 	case days == 1:
-		return "昨天 " + hm
+		return locales.DateYesterday() + " " + hm
 	default:
-		return fmt.Sprintf("%d年%d月%d日 %s", t.Year(), int(t.Month()), t.Day(), hm)
+		return locales.DateFull(t)
 	}
 }
 
@@ -120,7 +121,7 @@ func displayName(a mailx.Addr) string {
 		}
 		return a.Email
 	}
-	return "未知发件人"
+	return locales.MiscUnknownSender()
 }
 
 // initials gives one or two letters for an avatar: one for CJK names, the
@@ -158,5 +159,5 @@ func addrLine(list []mailx.Addr) string {
 			parts = append(parts, a.Email)
 		}
 	}
-	return strings.Join(parts, "、")
+	return strings.Join(parts, locales.AddrSep())
 }

@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"ccmail/locales"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -60,7 +61,7 @@ func TestSearchShortcutFocusesField(t *testing.T) {
 	a, tt := newTestApp(t)
 	tt.Key(0, ui.KeySlash)
 	tt.Frame()
-	if !tt.Focused("搜索邮件") {
+	if !tt.Focused(locales.TitlebarSearch()) {
 		t.Fatal("search field did not take the focus")
 	}
 	if a.query != "" {
@@ -70,7 +71,7 @@ func TestSearchShortcutFocusesField(t *testing.T) {
 
 func TestComposeOpensAndRequiresRecipient(t *testing.T) {
 	a, tt := newTestApp(t)
-	if err := tt.Click("写邮件"); err != nil {
+	if err := tt.Click(locales.TitlebarCompose()); err != nil {
 		t.Fatalf("click compose: %v", err)
 	}
 	tt.Frame()
@@ -83,42 +84,42 @@ func TestComposeOpensAndRequiresRecipient(t *testing.T) {
 	}
 	// the sheet stays open with the error shown
 	tt.Frame()
-	if !tt.HasText("请填写收件人") {
+	if !tt.HasText(locales.ComposeNeedRecipient()) {
 		t.Fatal("error not shown in the sheet")
 	}
 }
 
 func TestSettingsAndWizardOpen(t *testing.T) {
 	a, tt := newTestApp(t)
-	if err := tt.Click("设置"); err != nil {
+	if err := tt.Click(locales.MiscSettings()); err != nil {
 		t.Fatalf("click settings: %v", err)
 	}
 	tt.Frame()
 	if !a.settings {
 		t.Fatal("settings did not open")
 	}
-	if !tt.HasText("已挂载的账号") {
+	if !tt.HasText(locales.SettingsMountedAccounts()) {
 		t.Fatal("accounts tab not shown")
 	}
-	if err := tt.Click("添加账号"); err != nil {
+	if err := tt.Click(locales.SettingsAddAccount()); err != nil {
 		t.Fatalf("click add account: %v", err)
 	}
 	tt.Frame()
 	if a.wizard == nil {
 		t.Fatal("wizard did not open")
 	}
-	if !tt.HasText("选择邮件服务商") {
+	if !tt.HasText(locales.WizardPickProvider()) {
 		t.Fatal("provider step not shown")
 	}
 }
 
 func TestSidebarCollapseToggle(t *testing.T) {
 	a, tt := newTestApp(t)
-	before, ok := tt.Find("邮件列表")
+	before, ok := tt.Find(locales.ListAriaLabel())
 	if !ok {
 		t.Fatal("list not found")
 	}
-	if err := tt.Click("收起侧栏"); err != nil {
+	if err := tt.Click(locales.TitlebarCollapseSidebar()); err != nil {
 		t.Fatalf("click collapse: %v", err)
 	}
 	tt.Frame()
@@ -129,7 +130,7 @@ func TestSidebarCollapseToggle(t *testing.T) {
 	// the width eases to the rail rather than snapping
 	tt.Advance(80 * time.Millisecond)
 	tt.Frame()
-	mid, ok := tt.Find("邮件列表")
+	mid, ok := tt.Find(locales.ListAriaLabel())
 	if !ok {
 		t.Fatal("list vanished mid-transition")
 	}
@@ -139,24 +140,24 @@ func TestSidebarCollapseToggle(t *testing.T) {
 
 	tt.Advance(300 * time.Millisecond)
 	tt.Frame()
-	end, _ := tt.Find("邮件列表")
+	end, _ := tt.Find(locales.ListAriaLabel())
 	if end.X > 90 {
 		t.Fatalf("rail width leaves the list at %.1f, want ~74", end.X)
 	}
-	if tt.HasText("智能视图") {
+	if tt.HasText(locales.SidebarSmartViews()) {
 		t.Fatal("collapsed rail still shows section labels")
 	}
 
-	if err := tt.Click("展开侧栏"); err != nil {
+	if err := tt.Click(locales.TitlebarExpandSidebar()); err != nil {
 		t.Fatalf("click expand: %v", err)
 	}
 	tt.Advance(300 * time.Millisecond)
 	tt.Frame()
-	back, _ := tt.Find("邮件列表")
+	back, _ := tt.Find(locales.ListAriaLabel())
 	if a.prefs.SidebarShut || back.X < 200 {
 		t.Fatalf("sidebar did not expand: shut=%v x=%.1f", a.prefs.SidebarShut, back.X)
 	}
-	if !tt.HasText("智能视图") {
+	if !tt.HasText(locales.SidebarSmartViews()) {
 		t.Fatal("expanded sidebar lost its section labels")
 	}
 }
