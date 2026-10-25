@@ -27,6 +27,13 @@ body {
 .top a.back { font-size: 13.5px; color: var(--muted); }
 .top a.back:hover { color: var(--text); }
 h1 { font-size: clamp(24px, 3vw, 32px); font-weight: 800; letter-spacing: 0.01em; margin: 44px 0 10px; }
+.decided {
+  display: inline-block; margin: 4px 0 12px;
+  font-size: 13.5px; color: var(--muted);
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 9px 14px;
+}
+.decided b { color: var(--text); }
 .lead { color: var(--muted); font-size: 15px; max-width: 640px; }
 
 .duel {
@@ -125,6 +132,7 @@ h1 { font-size: clamp(24px, 3vw, 32px); font-weight: 800; letter-spacing: 0.01em
   </div>
 
   <h1>logo 比稿</h1>
+  <p class="decided">已选定：<b>原版 · 蓝</b>（2026-10-25）。官网 favicon、og 图、词标与 README 均已接入；应用图标暂未变动。以下比稿保留作记录。</p>
   <p class="lead">左：你提供的原版（ChatGPT 生成，蓝）。右：同一构图按 ccmail 石墨单色语言重绘（取 <code style="font-family:ui-monospace,monospace;font-size:12px">palette.go</code> 灰阶，明暗底各验了一遍）。看完全页再定用哪版。</p>
 
   <div class="duel">

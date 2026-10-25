@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/logo-blue.png" width="96" alt="ccmail logo"></p>
+
 # ccmail
 
 一个安静、专注的多账号邮件客户端。支持 Gmail、QQ 邮箱、163、126、Outlook、iCloud、企业邮箱等任意 IMAP/SMTP 服务，多账号聚合到统一收件箱。
