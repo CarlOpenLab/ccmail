@@ -20,7 +20,7 @@ func (a *App) sidebar(c *ui.Context, p palette, compact bool) {
 			a.sidebarRail(c, p)
 			return
 		}
-		ui.Column(c).Width(a.sidebarW).Gap(4).Children(func() {
+		ui.Column(c).Width(a.sidebarW).FillHeight().Gap(4).Children(func() {
 			side := ui.Sidebar(c, &a.sidebarSel, func() {
 				ui.SidebarSection(c, "智能视图", nil, func() {
 					item := ui.SidebarItem(c, "unified", iconInbox, "全部收件箱")
@@ -62,14 +62,14 @@ func (a *App) sidebar(c *ui.Context, p palette, compact bool) {
 				a.sidebarChanged()
 			}
 
-			foot := ui.ButtonBase(c).Height(32).Radius(8).FillWidth().Center().Gap(6).Label("添加邮箱账号")
+			foot := ui.ButtonBase(c).Height(32).Radius(8).FillWidth().Center().Gap(6).
+				Label("添加邮箱账号").Background(p.Card).Border(1, p.Border)
 			if foot.Hovered() {
-				foot.Background(p.Chip)
+				foot.Background(p.BtnHover)
 			}
-			foot.Background(p.Chip.Alpha(0.5))
 			foot.Children(func() {
 				ui.Icon(c, iconPlus).FontSize(14).TextColor(p.Muted)
-				ui.Text(c, "添加邮箱账号").FontSize(12.5).TextColor(p.Muted)
+				ui.Text(c, "添加邮箱账号").FontSize(12.5).TextColor(p.Text)
 			})
 			foot.OnClick(func() { a.openWizard() })
 
