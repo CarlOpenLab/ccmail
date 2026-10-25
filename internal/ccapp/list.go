@@ -223,14 +223,10 @@ func (a *App) listRow(c *ui.Context, p palette, i int) {
 
 	row.Children(func() {
 		fill := ui.Row(c).FillWidth().Padding(9, 10).Gap(10).Radius(10).AlignItems(ui.Start)
-		switch {
-		case selected:
+		// The list paints hover itself and draws the keyboard focus ring;
+		// the fill only owns the selection, so neither is doubled.
+		if selected {
 			fill.Background(p.SelectedRow)
-			if p.Dark {
-				fill.Border(1, p.Border)
-			}
-		case row.Hovered():
-			fill.Background(p.Hover)
 		}
 		fill.Children(func() {
 			ui.Avatar(c, displayName(env.From), nil).FontSize(16)

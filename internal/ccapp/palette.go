@@ -90,10 +90,10 @@ func paletteFor(dark bool) palette {
 			CTAText:    ui.Hex("#14151a"),
 			CTAHover:   ui.Hex("#f4f5f7"),
 
-			SelectedRow:   ui.Hex("#2e313a"),
+			SelectedRow:   ui.Hex("#343945"),
 			SelectedText:  ui.Hex("#f3f4f7"),
 			SelectedMuted: ui.RGBA(243, 244, 247, 0.62),
-			FocusRing:     ui.Hex("#a7adba"),
+			FocusRing:     ui.Hex("#7f8795"),
 
 			Danger:   ui.Hex("#ff6961"),
 			Success:  ui.Hex("#4fd17a"),
