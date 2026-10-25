@@ -43,9 +43,9 @@ func (a *App) settingsModal(c *ui.Context, p palette) {
 						row := ui.ButtonBase(c).Height(34).Padding(0, 10).Gap(10).Radius(8).Label(item[0])
 						switch {
 						case a.settingsTab == i:
-							row.Background(p.Chip)
+							row.Background(p.ChipDeep)
 						case row.Hovered():
-							row.Background(p.Hover)
+							row.Background(p.HoverStrong)
 						}
 						row.Children(func() {
 							color := p.Muted

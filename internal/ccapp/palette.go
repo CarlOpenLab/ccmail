@@ -13,14 +13,17 @@ type palette struct {
 	// stay quiet instead of turning into bright pills.
 	Neutral bool
 
-	Window   ui.Color
-	Card     ui.Color
-	Popover  ui.Color
-	Sunken   ui.Color
-	Hover    ui.Color
-	Chip     ui.Color
-	ChipDeep ui.Color
-	Selected ui.Color
+	Window      ui.Color
+	Card        ui.Color
+	Popover     ui.Color
+	Sunken      ui.Color
+	Hover       ui.Color
+	HoverStrong ui.Color
+	Btn         ui.Color
+	BtnHover    ui.Color
+	Chip        ui.Color
+	ChipDeep    ui.Color
+	Selected    ui.Color
 
 	Text   ui.Color
 	Muted  ui.Color
@@ -99,15 +102,18 @@ func paletteFor(dark bool, accentID string) palette {
 	accent, onAccent, _ := accentFor(accentID, dark)
 	if dark {
 		return palette{
-			Dark:     true,
-			Window:   ui.Hex("#121216"),
-			Card:     ui.Hex("#1d1d22"),
-			Popover:  ui.Hex("#232329"),
-			Sunken:   ui.Hex("#17171c"),
-			Hover:    ui.RGBA(255, 255, 255, 0.045),
-			Chip:     ui.RGBA(255, 255, 255, 0.06),
-			ChipDeep: ui.RGBA(255, 255, 255, 0.105),
-			Selected: accent.Alpha(0.18),
+			Dark:        true,
+			Window:      ui.Hex("#121216"),
+			Card:        ui.Hex("#1d1d22"),
+			Popover:     ui.Hex("#232329"),
+			Sunken:      ui.Hex("#17171c"),
+			Hover:       ui.RGBA(255, 255, 255, 0.06),
+			HoverStrong: ui.RGBA(255, 255, 255, 0.09),
+			Btn:         ui.Hex("#26262c"),
+			BtnHover:    ui.Hex("#303038"),
+			Chip:        ui.RGBA(255, 255, 255, 0.06),
+			ChipDeep:    ui.RGBA(255, 255, 255, 0.105),
+			Selected:    accent.Alpha(0.18),
 
 			Text:   ui.Hex("#f0f0f4"),
 			Muted:  ui.Hex("#a7a7b3"),
@@ -127,14 +133,17 @@ func paletteFor(dark bool, accentID string) palette {
 		}
 	}
 	return palette{
-		Window:   ui.Hex("#eef0f4"),
-		Card:     ui.Hex("#ffffff"),
-		Popover:  ui.Hex("#ffffff"),
-		Sunken:   ui.Hex("#f4f5f8"),
-		Hover:    ui.RGBA(15, 18, 35, 0.035),
-		Chip:     ui.RGBA(15, 18, 35, 0.045),
-		ChipDeep: ui.RGBA(15, 18, 35, 0.075),
-		Selected: accent.Alpha(0.13),
+		Window:      ui.Hex("#eef0f4"),
+		Card:        ui.Hex("#ffffff"),
+		Popover:     ui.Hex("#ffffff"),
+		Sunken:      ui.Hex("#f4f5f8"),
+		Hover:       ui.RGBA(15, 18, 35, 0.055),
+		HoverStrong: ui.RGBA(15, 18, 35, 0.085),
+		Btn:         ui.Hex("#f2f3f5"),
+		BtnHover:    ui.Hex("#e8eaee"),
+		Chip:        ui.RGBA(15, 18, 35, 0.045),
+		ChipDeep:    ui.RGBA(15, 18, 35, 0.075),
+		Selected:    accent.Alpha(0.13),
 
 		Text:   ui.Hex("#18181b"),
 		Muted:  ui.Hex("#64646e"),
@@ -164,8 +173,8 @@ func themed(c *ui.Context, accentID string) (palette, *ui.Theme) {
 	t := base
 	t.Background = p.Window
 	t.Surface = p.Card
-	t.SurfaceHover = p.Sunken
-	t.SurfacePressed = p.Chip
+	t.SurfaceHover = p.HoverStrong
+	t.SurfacePressed = p.BtnHover
 	t.Border = p.Border
 	t.Text = p.Text
 	t.TextMuted = p.Faint

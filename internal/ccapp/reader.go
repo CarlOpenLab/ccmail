@@ -178,13 +178,13 @@ func (a *App) readerHeader(c *ui.Context, p palette, compact bool) {
 
 // pill is a labelled action beside the message.
 func (a *App) pill(c *ui.Context, p palette, icon *ui.SVG, label string, onClick func()) {
-	b := ui.ButtonBase(c).Height(28).Padding(0, 9).Gap(6).Label(label).Radius(8).Background(p.Chip)
+	b := ui.ButtonBase(c).Height(28).Padding(0, 10).Gap(6).Label(label).Radius(8).Background(p.Btn)
 	if b.Hovered() {
-		b.Background(p.AccentSoft)
+		b.Background(p.BtnHover)
 	}
 	b.Children(func() {
 		ui.Icon(c, icon).FontSize(14).TextColor(p.Muted)
-		ui.Text(c, label).FontSize(12).TextColor(p.Muted)
+		ui.Text(c, label).FontSize(12.5).TextColor(p.Text)
 	})
 	b.OnClick(onClick)
 }

@@ -22,7 +22,7 @@ func (a *App) listPane(c *ui.Context, p palette) {
 				more := ui.ButtonBase(c).Label("更多操作").Tooltip("更多操作").Size(28, 28).Radius(8).Center()
 				more.Children(func() { ui.Icon(c, iconMore).FontSize(17).TextColor(p.Muted) })
 				if more.Hovered() {
-					more.Background(p.ChipDeep)
+					more.Background(p.HoverStrong)
 				}
 				more.Menu(func(m *ui.Menu) {
 					if m.Item("刷新列表").Chosen() {

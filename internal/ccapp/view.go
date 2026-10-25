@@ -174,7 +174,7 @@ func (a *App) titlebar(c *ui.Context, p palette, bar ui.TitleBar, compact, narro
 func (a *App) iconButton(c *ui.Context, icon *ui.SVG, label string, p palette, onClick func()) {
 	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(32, 32).Radius(9).Center()
 	if b.Hovered() {
-		b.Background(p.ChipDeep)
+		b.Background(p.HoverStrong)
 	}
 	b.Children(func() {
 		color := p.Muted
@@ -259,7 +259,7 @@ func clamp01(v float32) float32 {
 func (a *App) sidebarToggle(c *ui.Context, p palette, narrow bool) {
 	btn := ui.ButtonBase(c).Size(30, 30).Radius(8).Center()
 	if btn.Hovered() {
-		btn.Background(p.ChipDeep)
+		btn.Background(p.HoverStrong)
 	}
 	if narrow {
 		btn.Label("打开侧栏").Tooltip("打开侧栏 (⌘B)")
