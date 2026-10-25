@@ -128,6 +128,13 @@ jobs:
           # the publish job has no checkout: gh needs the repository name
           GH_REPO: ${{ github.repository }}
         run: |
-          gh release upload "$TAG" release-assets/* --clobber
+          # artifacts keep their build/<os>-<arch>/ layout: upload files only
+          mapfile -t assets < <(find release-assets -type f \( \
+            -name '*.dmg' -o -name '*Setup*.exe' -o -name '*.tar.gz' -o -name '*.deb' \))
+          if [ ${#assets[@]} -eq 0 ]; then
+            echo "没有找到安装包"; exit 1
+          fi
+          printf '%s\n' "${assets[@]}"
+          gh release upload "$TAG" "${assets[@]}" --clobber
           gh release edit "$TAG" --draft=false --latest
           gh release view "$TAG" --json url -q .url
