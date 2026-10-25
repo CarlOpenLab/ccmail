@@ -7,8 +7,10 @@ Go + [mygo](https://github.com/egoist/mygo) 桌面应用：**界面是 mygo 原�
 ## 快速开始
 
 ```bash
-go build -o ccmail .                    # Go 1.27+
+go build -o ccmail .                    # Go 1.27+，直接跑
 ./ccmail                                # 打开原生窗口
+
+go tool mygo build                       # 打安装包：macOS .app/.dmg、Windows Setup、Linux tar/deb
 ```
 
 - macOS 已实测；Windows 需要 WebView2（Win10/11 自带），Linux 需要 WebKitGTK（HTML 邮件正文用到）。
@@ -81,8 +83,11 @@ ccmail/
 │   ├── watchers/         账号状态、定时同步、IDLE、桌面通知
 │   ├── hub/              进程内事件广播（原生 UI 订阅）
 │   ├── prefs/            本机偏好
-│   ├── icon/             程序化生成的窗口 / 托盘图标
+│   ├── icon/             程序化生成的窗口 / 托盘 / 安装包图标
 │   └── version/          应用名称与版本号
+├── resources/icon.png    1024px 应用图标（mygo build 用）
+├── mygo.json             打包配置：名称、identifier、版本、输出目录
+├── CHANGELOG.md          版本说明，Release 从这里取
 └── data/                 运行时数据（可随时删除重置）
 ```
 
@@ -90,6 +95,31 @@ ccmail/
 - **同步**：按邮箱维护 UIDVALIDITY + UIDNEXT 做增量同步，信封缓存本地；正文按需拉取并缓存，摘要后台渐进填充。
 - **实时**：每个真实账号一条独立 IDLE 连接监听 INBOX（25 分钟重连），事件经 `hub` 广播；界面聚合刷新状态与列表。
 - **安全渲染**：HTML 先经白名单清洗（`internal/ccapp/htmlmail.go`），再交给内嵌 WebView；远程图片默认替换为占位并可手动加载，相对链接不导航。
+
+## 打包与发布
+
+版本号有两处，必须一致：
+
+- `mygo.json` 的 `version`：打包、安装包与菜单里显示的版本
+- `internal/version/version.go` 的 `Version`：「关于」页显示的版本
+- `CHANGELOG.md`：`## [x.y.z]` 段落会成为 GitHub Release 的说明
+
+发布流程（GitHub Actions，`.github/workflows/`）：
+
+```bash
+# 1. 改好版本号与 CHANGELOG，提交
+# 2. 打 tag 并推送，Release 工作流自动构建并发布
+git tag v2.2.0
+git push origin v2.2.0
+```
+
+推送 tag 后：
+
+- `create-release` 校验 tag 与 `mygo.json` / `version.go` 一致，建草稿 release 并写入 CHANGELOG 段落
+- `build` 在 macOS / Linux runner 上跑 `go tool mygo build`，产出 `ccmail 2.2.0.dmg`、`ccmail Setup 2.2.0 amd64.exe`、`ccmail-2.2.0-linux-amd64.tar.gz`、`ccmail_2.2.0_amd64.deb`
+- `publish` 上传产物并发布草稿
+
+日常提交与 PR 走 `CI` 工作流：`gofmt` / `go vet` / `go tool mygo vet` / `go test` / `go build`。
 
 ## 说明
 

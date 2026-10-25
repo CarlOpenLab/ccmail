@@ -69,9 +69,10 @@ func Generate(size int) []byte {
 	return out.Bytes()
 }
 
-// gradient is the vertical brand wash (#5a86ff → #2f5ce0).
+// gradient is the vertical graphite wash (#444a54 → #1e2126), matching the
+// app's neutral chrome.
 func gradient(t float64) (float64, float64, float64) {
-	return 90 + (47-90)*t, 134 + (92-134)*t, 255 + (224-255)*t
+	return 68 + (30-68)*t, 74 + (33-74)*t, 84 + (38-84)*t
 }
 
 // envelopeInk reports whether the point falls on the white envelope outline:

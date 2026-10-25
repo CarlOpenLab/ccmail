@@ -1,0 +1,131 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish (vX.Y.Z)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref_name || inputs.tag }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+jobs:
+  # 先建起草稿 release 并写入 CHANGELOG 对应段落：各个 build job 只负责
+  # 产出安装包，避免并发创建同名 release。
+  create-release:
+    name: Check version and draft release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check that the tag matches mygo.json and version.go
+        run: |
+          version="${TAG#v}"
+          want="v$(jq -r .version mygo.json)"
+          test "$TAG" = "$want" || {
+            echo "tag $TAG 与 mygo.json 的 version $want 不一致"; exit 1; }
+          grep -q "Version = \"$version\"" internal/version/version.go || {
+            echo "internal/version/version.go 不是 $version"; exit 1; }
+
+      - name: Create the draft release with the changelog notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${TAG#v}"
+          awk -v v="$version" '
+            /^## / {
+              if (in_notes) exit
+              h = $2
+              gsub(/^\[/, "", h); sub(/\].*/, "", h); sub(/^v/, "", h)
+              in_notes = (h == v); next
+            }
+            in_notes { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then
+            echo "CHANGELOG.md 里没有 $version 的发布说明"; exit 1
+          fi
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" \
+              --draft \
+              --title "ccmail $TAG" \
+              --notes-file notes.md
+
+  build:
+    name: Build ${{ matrix.artifact }}
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: darwin/universal
+            artifact: macos
+          - os: ubuntu-latest
+            platform: linux/amd64
+            artifact: linux
+          - os: ubuntu-latest
+            platform: windows/amd64
+            artifact: windows
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      # 在 Linux 上打 Windows 安装包需要 NSIS（makensis），Windows runner 自带。
+      - name: Install NSIS for the Windows installer
+        if: matrix.artifact == 'windows'
+        run: sudo apt-get update && sudo apt-get install -y nsis
+
+      - name: Build with mygo
+        run: go tool mygo build -platform "${{ matrix.platform }}"
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            build/**/*.dmg
+            build/**/*Setup*.exe
+            build/**/*.tar.gz
+            build/**/*.deb
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download installers
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Upload the assets and publish the draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$TAG" release-assets/* --clobber
+          gh release edit "$TAG" --draft=false --latest
+          gh release view "$TAG" --json url -q .url

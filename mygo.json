@@ -1,0 +1,8 @@
+{
+  "name": "ccmail",
+  "identifier": "com.carlopenlab.ccmail",
+  "version": "2.2.0",
+  "copyright": "© 2026 CarlOpenLab",
+  "icon": "resources/icon.png",
+  "out": "build"
+}
