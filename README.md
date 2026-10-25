@@ -119,6 +119,8 @@ git push origin v2.2.0
 - `build` 在 macOS / Linux runner 上跑 `go tool mygo build`，产出 `ccmail 2.2.0.dmg`、`ccmail Setup 2.2.0 amd64.exe`、`ccmail-2.2.0-linux-amd64.tar.gz`、`ccmail_2.2.0_amd64.deb`
 - `publish` 上传产物并发布草稿
 
+安装包目前是 ad-hoc 签名（没有 Developer ID / 代码签名证书）：macOS 首次打开需要右键「打开」，Windows 会提示 SmartScreen；需要分发签名时在 `mygo.json` 里加 `macos.signingIdentity` / `windows.certificate` 并配置对应 secrets。
+
 日常提交与 PR 走 `CI` 工作流：`gofmt` / `go vet` / `go tool mygo vet` / `go test` / `go build`。
 
 ## 说明
