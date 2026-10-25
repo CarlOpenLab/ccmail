@@ -1,0 +1,8 @@
+node_modules/
+data/
+server.log
+go-server.log
+*.tmp
+*.exe
+*.exe~
+.DS_Store

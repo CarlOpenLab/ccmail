@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Gloss Mail</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236d5afc'/%3E%3Cpath d='M16 6l2.2 7.8L26 16l-7.8 2.2L16 26l-2.2-7.8L6 16l7.8-2.2z' fill='white'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="app" class="app">
+    <header class="titlebar">
+      <div class="tb-left">
+        <button class="icon-btn ghost only-compact" id="btnSidebar" title="切换侧栏 (Ctrl+B)" aria-label="切换侧栏"></button>
+        <a class="brand" href="#" id="brandHome" title="Gloss Mail">
+          <span class="brand-glyph"></span><span class="brand-name">Gloss</span>
+        </a>
+      </div>
+      <div class="tb-center">
+        <div class="search-wrap" id="searchWrap">
+          <span class="search-icon"></span>
+          <input id="searchInput" type="text" placeholder="搜索邮件…" autocomplete="off" spellcheck="false" />
+          <button class="search-clear" id="searchClear" hidden aria-label="清空搜索">×</button>
+          <kbd class="search-kbd">/</kbd>
+        </div>
+      </div>
+      <div class="tb-right">
+        <div class="avatar-stack" id="avatarStack" title="已挂载的账号"></div>
+        <button class="icon-btn ghost" id="btnRefresh" title="刷新 (⇧R)" aria-label="刷新"></button>
+        <button class="icon-btn ghost" id="btnTheme" title="切换深浅色" aria-label="切换主题"></button>
+        <button class="icon-btn ghost" id="btnSettings" title="设置" aria-label="设置"></button>
+        <button class="btn primary compose-btn" id="btnCompose"><span class="compose-icon"></span>写邮件</button>
+      </div>
+    </header>
+
+    <div class="main" id="main">
+      <aside class="sidebar" id="sidebar"></aside>
+      <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+      <div class="content-card" id="contentCard">
+        <section class="list-pane" id="listPane">
+          <header class="list-head">
+            <div class="lh-top">
+              <button class="icon-btn ghost only-compact back-btn" id="btnBackReader" hidden aria-label="返回列表"></button>
+              <div class="lh-titles">
+                <h2 class="lh-title" id="listTitle">全部收件箱</h2>
+                <div class="lh-sub" id="listSub"></div>
+              </div>
+              <button class="icon-btn ghost" id="btnListMore" title="更多操作" aria-label="更多操作"></button>
+            </div>
+            <div class="filter-chips" id="filterChips">
+              <button class="chip active" data-filter="">全部</button>
+              <button class="chip" data-filter="unread">未读</button>
+              <button class="chip" data-filter="flagged">星标</button>
+              <button class="chip" data-filter="attachments">附件</button>
+            </div>
+          </header>
+          <div class="list-scroll" id="listScroll" tabindex="-1"></div>
+        </section>
+        <section class="reader-pane" id="readerPane"></section>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot" class="toast-root" aria-live="polite"></div>
+  <div id="ctxRoot"></div>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
