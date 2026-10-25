@@ -47,7 +47,7 @@ type accentPreset struct {
 }
 
 var accentPresets = []accentPreset{
-	{ID: "ink", Name: "石墨", Light: "#33302c", Dark: "#b6afa3"},
+	{ID: "ink", Name: "石墨", Light: "#2b2e34", Dark: "#8b94a4"},
 	{ID: "indigo", Name: "靛蓝", Light: "#3b5bdb", Dark: "#8fa4ff"},
 	{ID: "moss", Name: "苔绿", Light: "#39664f", Dark: "#8cc7a8"},
 	{ID: "clay", Name: "陶土", Light: "#9c4f3b", Dark: "#e8a58c"},
