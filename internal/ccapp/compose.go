@@ -140,7 +140,7 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 			return
 		}
 		panel := ui.Column(c).Width(680).MaxHeight(640).Clip().Background(p.Popover).Radius(16).
-			Shadow(0, 22, 56, -12, p.Shadow)
+			Border(1, p.Border).Shadow(0, 22, 56, -12, p.Shadow)
 		panel.Children(func() {
 			// header
 			ui.Row(c).Padding(16, 18).Gap(10).AlignItems(ui.Center).Children(func() {
@@ -192,7 +192,7 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 			ui.Divider(c)
 
 			// formatting toolbar
-			ui.Row(c).Padding(4, 14).Gap(2).AlignItems(ui.Center).Background(p.Chip).Children(func() {
+			ui.Row(c).Padding(4, 14).Gap(2).AlignItems(ui.Center).Children(func() {
 				f := cs.Doc.Formatting()
 				tool := func(icon *ui.SVG, label string, on bool, run func()) {
 					b := ui.ButtonBase(c).Label(label).Tooltip(label).KeepFocus().
@@ -232,7 +232,16 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 				body.Border(2, p.Accent)
 			}
 			body.Children(func() {
-				richtext.Editor(c, cs.Doc, richtext.EditorOptions{Placeholder: "写下你想说的…"}).Grow(1).Padding(12, 18)
+				rt := richtext.DefaultTheme(c.Theme())
+				rt.Link = p.Accent
+				rt.Selection = p.Selected
+				rt.QuoteBar = p.Faint.Alpha(0.55)
+				rt.QuoteText = p.Muted
+				rt.QuoteBarWidth = 3
+				richtext.Editor(c, cs.Doc, richtext.EditorOptions{
+					Placeholder: "写下你想说的…",
+					Theme:       rt,
+				}).Grow(1).Padding(12, 18)
 			})
 
 			if len(cs.Atts) > 0 {

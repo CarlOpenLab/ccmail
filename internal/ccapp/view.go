@@ -30,14 +30,25 @@ func (a *App) View(c *ui.Context) {
 		a.titlebar(c, p, bar, compact, narrow)
 		if narrow && a.sidebarOpen {
 			ui.Row(c).Grow(1).Gap(10).Padding(0, 10, 10, 10).AlignItems(ui.Stretch).Children(func() {
-				a.sidebar(c, p)
+				ui.Column(c).Width(280).Shrink(0).FillHeight().Children(func() {
+					a.sidebar(c, p, false)
+				})
 				a.card(c, p, true)
 			})
 			return
 		}
 		ui.Row(c).Grow(1).Gap(10).Padding(0, 10, 10, 10).AlignItems(ui.Stretch).Children(func() {
 			if !narrow {
-				a.sidebar(c, p)
+				host := ui.Column(c).Key("sidebar-host")
+				target := a.sidebarW
+				if a.prefs.SidebarShut {
+					target = 64
+				}
+				w := host.Animate("width", target, 200*time.Millisecond)
+				host.Width(w).Shrink(0).FillHeight().Clip()
+				host.Children(func() {
+					a.sidebar(c, p, a.prefs.SidebarShut)
+				})
 			}
 			a.card(c, p, compact)
 		})
@@ -115,15 +126,25 @@ func (a *App) titlebar(c *ui.Context, p palette, bar ui.TitleBar, compact, narro
 		Gap(10).AlignItems(ui.Center).Children(func() {
 		// left wing: the sidebar toggle on narrow windows, else just room
 		ui.Row(c).Grow(1).AlignItems(ui.Center).Children(func() {
-			if !narrow {
-				return
-			}
-			btn := ui.ButtonBase(c).Label("切换侧栏").Tooltip("切换侧栏 (⌘B)").Size(30, 30).Radius(8).Center()
+			btn := ui.ButtonBase(c).Size(30, 30).Radius(8).Center()
 			if btn.Hovered() {
 				btn.Background(p.ChipDeep)
 			}
-			btn.Children(func() { ui.Icon(c, iconMenu).FontSize(18).TextColor(p.Muted) })
-			btn.OnClick(func() { a.sidebarOpen = !a.sidebarOpen })
+			if narrow {
+				btn.Label("打开侧栏").Tooltip("打开侧栏 (⌘B)")
+				btn.Children(func() { ui.Icon(c, iconMenu).FontSize(18).TextColor(p.Muted) })
+				btn.OnClick(func() { a.sidebarOpen = !a.sidebarOpen })
+				return
+			}
+			shut := a.prefs.SidebarShut
+			btn.Label(map[bool]string{true: "展开侧栏", false: "收起侧栏"}[shut]).
+				Tooltip(map[bool]string{true: "展开侧栏 (⌘B)", false: "收起侧栏 (⌘B)"}[shut])
+			icon := iconSidebarCollapse
+			if shut {
+				icon = iconSidebarExpand
+			}
+			btn.Children(func() { ui.Icon(c, icon).FontSize(18).TextColor(p.Muted) })
+			btn.OnClick(func() { a.toggleSidebar() })
 		})
 
 		// the search field sits on the window's center line
@@ -225,6 +246,13 @@ func (a *App) toggleTheme() {
 }
 
 // searchBar is the title bar's field: magnifier, input, clear key.
+// toggleSidebar collapses the sidebar to its rail, or opens the drawer when
+// the window is too narrow for one.
+func (a *App) toggleSidebar() {
+	a.prefs.SidebarShut = !a.prefs.SidebarShut
+	a.savePrefs()
+}
+
 // tickSearch runs the debounced search once the pause has passed.
 func (a *App) tickSearch() {
 	if a.queryDue && time.Since(a.queryAt) >= 200*time.Millisecond {

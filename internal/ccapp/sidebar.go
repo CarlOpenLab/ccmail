@@ -14,63 +14,107 @@ var folderIcons = map[string]*ui.SVG{
 }
 
 // sidebar is the source list: smart views, then every account's mailboxes.
-func (a *App) sidebar(c *ui.Context, p palette) {
-	ui.Column(c).Width(a.sidebarW).Shrink(0).Gap(4).Children(func() {
-		side := ui.Sidebar(c, &a.sidebarSel, func() {
-			ui.SidebarSection(c, "智能视图", nil, func() {
-				item := ui.SidebarItem(c, "unified", iconInbox, "全部收件箱")
-				if a.unreadTotal > 0 {
-					item.Children(func() {
-						bg, fg := p.badgeColors()
-						ui.Badge(c, strconv.Itoa(a.unreadTotal)).Background(bg).TextColor(fg)
-					})
-				}
-				ui.SidebarItem(c, "flagged", iconStar, "星标邮件")
-			})
+func (a *App) sidebar(c *ui.Context, p palette, compact bool) {
+	ui.Column(c).FillHeight().Gap(4).Children(func() {
+		if compact {
+			a.sidebarRail(c, p)
+			return
+		}
+		ui.Column(c).Gap(4).Children(func() {
+			side := ui.Sidebar(c, &a.sidebarSel, func() {
+				ui.SidebarSection(c, "智能视图", nil, func() {
+					item := ui.SidebarItem(c, "unified", iconInbox, "全部收件箱")
+					if a.unreadTotal > 0 {
+						item.Children(func() {
+							bg, fg := p.badgeColors()
+							ui.Badge(c, strconv.Itoa(a.unreadTotal)).Background(bg).TextColor(fg)
+						})
+					}
+					ui.SidebarItem(c, "flagged", iconStar, "星标邮件")
+				})
 
-			if len(a.accounts) == 0 {
-				return
+				if len(a.accounts) == 0 {
+					return
+				}
+				ui.SidebarSection(c, "邮箱", nil, func() {
+					for _, acc := range a.accounts {
+						open := a.sectionOpen(acc.ID)
+						ui.SidebarSection(c, acc.Name, open, func() {
+							for _, f := range visibleFolders(acc.Folders) {
+								icon := folderIcons[f.Kind]
+								if icon == nil {
+									icon = iconFolder
+								}
+								item := ui.SidebarItem(c, "folder/"+acc.ID+"/"+f.Path, icon, f.Name)
+								if f.Unread > 0 {
+									item.Children(func() {
+										bg, fg := p.badgeColors()
+										ui.Badge(c, strconv.Itoa(f.Unread)).Background(bg).TextColor(fg)
+									})
+								}
+							}
+						})
+					}
+				})
+			}).Grow(1).Label("侧栏").Background(ui.Transparent)
+
+			if side.Changed() {
+				a.sidebarChanged()
 			}
-			ui.SidebarSection(c, "邮箱", nil, func() {
-				for _, acc := range a.accounts {
-					open := a.sectionOpen(acc.ID)
-					ui.SidebarSection(c, acc.Name, open, func() {
-						for _, f := range visibleFolders(acc.Folders) {
-							icon := folderIcons[f.Kind]
-							if icon == nil {
-								icon = iconFolder
-							}
-							item := ui.SidebarItem(c, "folder/"+acc.ID+"/"+f.Path, icon, f.Name)
-							if f.Unread > 0 {
-								item.Children(func() {
-									bg, fg := p.badgeColors()
-									ui.Badge(c, strconv.Itoa(f.Unread)).Background(bg).TextColor(fg)
-								})
-							}
-						}
-					})
-				}
+
+			foot := ui.ButtonBase(c).Height(32).Radius(8).FillWidth().Center().Gap(6).Label("添加邮箱账号")
+			if foot.Hovered() {
+				foot.Background(p.Chip)
+			}
+			foot.Background(p.Chip.Alpha(0.5))
+			foot.Children(func() {
+				ui.Icon(c, iconPlus).FontSize(14).TextColor(p.Muted)
+				ui.Text(c, "添加邮箱账号").FontSize(12.5).TextColor(p.Muted)
 			})
-		}).Grow(1).Label("侧栏").Background(ui.Transparent)
+			foot.OnClick(func() { a.openWizard() })
 
-		if side.Changed() {
-			a.sidebarChanged()
-		}
-
-		foot := ui.ButtonBase(c).Height(32).Radius(8).FillWidth().Center().Gap(6).Label("添加邮箱账号")
-		if foot.Hovered() {
-			foot.Background(p.Chip)
-		}
-		foot.Background(p.Chip.Alpha(0.5))
-		foot.Children(func() {
-			ui.Icon(c, iconPlus).FontSize(14).TextColor(p.Muted)
-			ui.Text(c, "添加邮箱账号").FontSize(12.5).TextColor(p.Muted)
+			ui.Textf(c, "%s · IMAP / SMTP 多账号", appName).FontSize(11).
+				TextColor(p.Faint).TextAlign(ui.Center)
 		})
-		foot.OnClick(func() { a.openWizard() })
-
-		ui.Textf(c, "%s · IMAP / SMTP 多账号", appName).FontSize(11).
-			TextColor(p.Faint).TextAlign(ui.Center)
 	})
+}
+
+// sidebarRail is the collapsed sidebar: icons only, named by tooltips.
+func (a *App) sidebarRail(c *ui.Context, p palette) {
+	side := ui.Sidebar(c, &a.sidebarSel, func() {
+		ui.SidebarItem(c, "unified", iconInbox, "").Tooltip("全部收件箱")
+		ui.SidebarItem(c, "flagged", iconStar, "").Tooltip("星标邮件")
+		for _, acc := range a.accounts {
+			folders := visibleFolders(acc.Folders)
+			prim := Folder{Name: "收件箱", Kind: "inbox"}
+			for _, f := range folders {
+				if f.Kind == "inbox" {
+					prim = f
+					break
+				}
+			}
+			if len(folders) > 0 && prim.Path == "" {
+				prim = folders[0]
+			}
+			icon := folderIcons[prim.Kind]
+			if icon == nil {
+				icon = iconFolder
+			}
+			ui.SidebarItem(c, "folder/"+acc.ID+"/"+prim.Path, icon, "").
+				Tooltip(acc.Name)
+		}
+	}).Grow(1).Label("侧栏").Background(ui.Transparent)
+
+	if side.Changed() {
+		a.sidebarChanged()
+	}
+
+	add := ui.ButtonBase(c).Size(34, 34).Radius(8).Center().Label("添加邮箱账号").Tooltip("添加邮箱账号")
+	if add.Hovered() {
+		add.Background(p.Chip)
+	}
+	add.Children(func() { ui.Icon(c, iconPlus).FontSize(15).TextColor(p.Muted) })
+	add.OnClick(func() { a.openWizard() })
 }
 
 // sectionOpen keeps one account's fold state across frames.

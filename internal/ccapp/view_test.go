@@ -58,6 +58,9 @@ func TestRenderScreens(t *testing.T) {
 	shot("wizard", 1280, 800, false, func(a *App) {
 		a.openWizard()
 	})
+	shot("sidebar-rail", 1280, 800, false, func(a *App) {
+		a.prefs.SidebarShut = true
+	})
 	shot("moss-dark", 1280, 800, true, func(a *App) {
 		a.prefs.Accent = "moss"
 	})

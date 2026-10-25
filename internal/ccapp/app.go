@@ -86,7 +86,11 @@ func (a *App) shortcuts(c *ui.Context) {
 		a.loadBody()
 	}
 	if c.Shortcut(ui.Ctrl, ui.KeyB) {
-		a.sidebarOpen = !a.sidebarOpen
+		if w, _ := c.Size(); w < 880 {
+			a.sidebarOpen = !a.sidebarOpen
+		} else {
+			a.toggleSidebar()
+		}
 	}
 	if c.Shortcut(0, ui.KeySlash) || c.Shortcut(ui.Cmd, ui.KeyK) {
 		a.search.Focus()

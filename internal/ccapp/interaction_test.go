@@ -2,6 +2,7 @@ package ccapp
 
 import (
 	"testing"
+	"time"
 
 	"github.com/egoist/mygo/ui"
 )
@@ -108,5 +109,54 @@ func TestSettingsAndWizardOpen(t *testing.T) {
 	}
 	if !tt.HasText("选择邮件服务商") {
 		t.Fatal("provider step not shown")
+	}
+}
+
+func TestSidebarCollapseToggle(t *testing.T) {
+	a, tt := newTestApp(t)
+	before, ok := tt.Find("侧栏")
+	if !ok {
+		t.Fatal("sidebar not found")
+	}
+	if err := tt.Click("收起侧栏"); err != nil {
+		t.Fatalf("click collapse: %v", err)
+	}
+	tt.Frame()
+	if !a.prefs.SidebarShut {
+		t.Fatal("sidebar did not collapse")
+	}
+
+	// the width eases to the rail rather than snapping
+	tt.Advance(80 * time.Millisecond)
+	tt.Frame()
+	mid, ok := tt.Find("侧栏")
+	if !ok {
+		t.Fatal("sidebar vanished mid-transition")
+	}
+	if mid.W >= before.W || mid.W <= 70 {
+		t.Fatalf("width did not animate: before=%.1f mid=%.1f", before.W, mid.W)
+	}
+
+	tt.Advance(300 * time.Millisecond)
+	tt.Frame()
+	end, _ := tt.Find("侧栏")
+	if end.W > 80 {
+		t.Fatalf("rail width %.1f, want ~64", end.W)
+	}
+	if tt.HasText("智能视图") {
+		t.Fatal("collapsed rail still shows section labels")
+	}
+
+	if err := tt.Click("展开侧栏"); err != nil {
+		t.Fatalf("click expand: %v", err)
+	}
+	tt.Advance(300 * time.Millisecond)
+	tt.Frame()
+	back, _ := tt.Find("侧栏")
+	if a.prefs.SidebarShut || back.W < 200 {
+		t.Fatalf("sidebar did not expand: shut=%v w=%.1f", a.prefs.SidebarShut, back.W)
+	}
+	if !tt.HasText("智能视图") {
+		t.Fatal("expanded sidebar lost its section labels")
 	}
 }

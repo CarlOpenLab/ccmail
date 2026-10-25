@@ -23,52 +23,61 @@ func (a *App) openSettings(tab int) {
 func (a *App) settingsModal(c *ui.Context, p palette) {
 	open := true
 	ui.Modal(c, &open, func() {
-		ui.Row(c).Width(800).Height(560).Clip().Background(p.Window).Radius(16).
-			Justify(ui.Start).AlignItems(ui.Stretch).
-			Shadow(0, 24, 64, -12, p.Shadow).Children(func() {
-			// navigation
-			ui.Column(c).Width(178).Shrink(0).Padding(10, 8).Gap(2).Children(func() {
-				ui.Text(c, "设置").FontSize(14.5).Bold().TextColor(p.Text).Padding(6, 10, 12, 10)
-				for i, item := range [][2]string{{"账号", "user"}, {"外观", "palette"}, {"快捷键", "keyboard"}, {"关于", "mail"}} {
-					i := i
-					row := ui.ButtonBase(c).Height(34).Padding(0, 10).Gap(10).Radius(8).Label(item[0])
-					if a.settingsTab == i {
-						row.Background(p.AccentSoft)
-					} else if row.Hovered() {
-						row.Background(p.Chip)
-					}
-					row.Children(func() {
-						color := p.Muted
-						if a.settingsTab == i {
-							color = p.Accent
-						}
-						icon := map[int]*ui.SVG{0: iconUser, 1: iconPalette, 2: iconKeyboard, 3: iconMail}[i]
-						ui.Icon(c, icon).FontSize(17).TextColor(color)
-						ui.Text(c, item[0]).FontSize(13).TextColor(color)
-					})
-					row.OnClick(func() { a.settingsTab = i })
-				}
+		panel := ui.Column(c).Width(800).Height(560).Clip().Background(p.Card).Radius(16).
+			Border(1, p.Border).Shadow(0, 24, 64, -12, p.Shadow)
+		panel.Children(func() {
+			// one header owns the title and the close button, top right
+			ui.Row(c).Height(48).Shrink(0).Padding(0, 12, 0, 20).Gap(10).
+				AlignItems(ui.Center).Children(func() {
+				ui.Text(c, "设置").FontSize(14.5).Bold().TextColor(p.Text)
+				ui.Text(c, "更改会立即生效").FontSize(11.5).TextColor(p.Faint)
 				ui.Spacer(c)
-				ui.ButtonBase(c).Height(34).Padding(0, 10).Gap(10).Radius(8).Label("关闭设置").Children(func() {
-					ui.Icon(c, iconClose).FontSize(16).TextColor(p.Muted)
-					ui.Text(c, "关闭").FontSize(13).TextColor(p.Muted)
-				}).OnClick(func() { a.settings = false })
+				a.iconButton(c, iconClose, "关闭设置", p, func() { a.settings = false })
 			})
+			ui.Divider(c)
 
-			ui.Box(c).Width(1).Background(p.Border)
-
-			ui.Column(c).Grow(1).FillHeight().Background(p.Card).Children(func() {
-				ui.Scroll(c).Grow(1).Padding(20, 28, 28, 28).Children(func() {
-					switch a.settingsTab {
-					case 0:
-						a.settingsAccounts(c, p)
-					case 1:
-						a.settingsAppearance(c, p)
-					case 2:
-						a.settingsShortcuts(c, p)
-					default:
-						a.settingsAbout(c, p)
+			ui.Row(c).Grow(1).MinHeight(0).AlignItems(ui.Stretch).Children(func() {
+				ui.Column(c).Width(180).Shrink(0).Padding(8, 8).Gap(2).Children(func() {
+					for i, item := range [][2]string{{"账号", "user"}, {"外观", "palette"}, {"快捷键", "keyboard"}, {"关于", "mail"}} {
+						i := i
+						row := ui.ButtonBase(c).Height(34).Padding(0, 10).Gap(10).Radius(8).Label(item[0])
+						switch {
+						case a.settingsTab == i:
+							row.Background(p.Chip)
+						case row.Hovered():
+							row.Background(p.Hover)
+						}
+						row.Children(func() {
+							color := p.Muted
+							if a.settingsTab == i {
+								color = p.Text
+							}
+							icon := map[int]*ui.SVG{0: iconUser, 1: iconPalette, 2: iconKeyboard, 3: iconMail}[i]
+							ui.Icon(c, icon).FontSize(17).TextColor(color)
+							text := ui.Text(c, item[0]).FontSize(13).TextColor(color)
+							if a.settingsTab == i {
+								text.Bold()
+							}
+						})
+						row.OnClick(func() { a.settingsTab = i })
 					}
+				})
+
+				ui.Box(c).Width(1).Background(p.Border)
+
+				ui.Column(c).Grow(1).MinWidth(0).Children(func() {
+					ui.Scroll(c).Grow(1).Padding(18, 26, 26, 26).Children(func() {
+						switch a.settingsTab {
+						case 0:
+							a.settingsAccounts(c, p)
+						case 1:
+							a.settingsAppearance(c, p)
+						case 2:
+							a.settingsShortcuts(c, p)
+						default:
+							a.settingsAbout(c, p)
+						}
+					})
 				})
 			})
 		})
@@ -89,10 +98,12 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 	if len(a.accounts) == 0 {
 		ui.Text(c, "还没有添加任何邮箱账号。").FontSize(13).TextColor(p.Muted)
 	}
-	for _, acc := range a.accounts {
+	for i, acc := range a.accounts {
 		acc := acc
-		card := ui.Column(c).Padding(12, 14).Radius(12).Background(p.Chip).Gap(8).
-			Border(1, p.Border).Margin(0, 0, 10, 0)
+		if i > 0 {
+			ui.Divider(c)
+		}
+		card := ui.Column(c).Padding(12, 2).Gap(8)
 		card.Children(func() {
 			ui.Row(c).Gap(12).AlignItems(ui.Center).Children(func() {
 				ui.Box(c).Size(34, 34).Radius(17).Center().Background(ui.Hex(acc.Color)).Children(func() {
@@ -165,8 +176,8 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 	}
 
 	groupTitle(c, p, "数据与缓存")
-	ui.Row(c).Padding(12, 14).Radius(12).Background(p.Chip).Border(1, p.Border).
-		Gap(12).AlignItems(ui.Center).Children(func() {
+	ui.Divider(c)
+	ui.Row(c).Padding(4, 0, 12, 0).Gap(12).AlignItems(ui.Center).Children(func() {
 		ui.Column(c).Grow(1).Gap(2).Children(func() {
 			ui.Text(c, "邮件缓存").FontSize(13).Bold().TextColor(p.Text)
 			ui.Text(c, "清空已缓存的正文与附件；账号和远端邮件不受影响，下次打开会重新拉取。").

@@ -38,6 +38,7 @@ func loadPrefs() Prefs {
 		Notifications: get("notifications", "on") != "off",
 		AutoImages:    get("autoImages", "0") == "1",
 		QuoteReply:    get("quoteReply", "1") != "0",
+		SidebarShut:   get("sidebarShut", "0") == "1",
 	}
 }
 
@@ -57,6 +58,7 @@ func (a *App) savePrefs() {
 		"notifications": map[bool]string{true: "on", false: "off"}[a.prefs.Notifications],
 		"autoImages":    on(a.prefs.AutoImages),
 		"quoteReply":    on(a.prefs.QuoteReply),
+		"sidebarShut":   on(a.prefs.SidebarShut),
 	})
 }
 

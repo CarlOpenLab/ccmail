@@ -47,7 +47,7 @@ func (a *App) wizardModal(c *ui.Context, p palette) {
 	open := true
 	ui.Modal(c, &open, func() {
 		ui.Column(c).Width(560).MaxHeight(640).Clip().Background(p.Popover).Radius(16).
-			Shadow(0, 22, 56, -12, p.Shadow).Children(func() {
+			Border(1, p.Border).Shadow(0, 22, 56, -12, p.Shadow).Children(func() {
 			ui.Row(c).Padding(16, 20).Gap(10).AlignItems(ui.Center).Children(func() {
 				title := "选择邮件服务商"
 				if w.Step == 2 {
