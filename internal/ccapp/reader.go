@@ -50,13 +50,13 @@ func (a *App) readerPane(c *ui.Context, p palette, compact bool) {
 
 		if a.blockedImages > 0 {
 			guard := ui.Row(c).Margin(0, 20, 8, 20).Padding(8, 12).Radius(10).
-				Background(p.Warning.Alpha(0.13)).Gap(10).AlignItems(ui.Center)
+				Background(p.Chip).Border(1, p.Border).Gap(10).AlignItems(ui.Center)
 			guard.Children(func() {
 				ui.Icon(c, iconImage).FontSize(15).TextColor(p.Warning)
 				ui.Textf(c, "已屏蔽 %d 张远程图片以保护隐私", a.blockedImages).FontSize(12).
 					TextColor(p.Muted).Grow(1)
 				load := ui.ButtonBase(c).Height(24).Padding(0, 10).Radius(7).Label("加载图片").
-					Background(p.Warning.Alpha(0.18))
+					Background(p.Btn).Border(1, p.Border)
 				load.Children(func() { ui.Text(c, "加载图片").FontSize(11.5).TextColor(p.Text) })
 				load.OnClick(func() { a.reloadImages() })
 			})
@@ -178,7 +178,8 @@ func (a *App) readerHeader(c *ui.Context, p palette, compact bool) {
 
 // pill is a labelled action beside the message.
 func (a *App) pill(c *ui.Context, p palette, icon *ui.SVG, label string, onClick func()) {
-	b := ui.ButtonBase(c).Height(28).Padding(0, 10).Gap(6).Label(label).Radius(8).Background(p.Btn)
+	b := ui.ButtonBase(c).Height(28).Padding(0, 10).Gap(6).Label(label).Radius(8).
+		Background(p.Btn).Border(1, p.Border)
 	if b.Hovered() {
 		b.Background(p.BtnHover)
 	}
@@ -197,7 +198,8 @@ func (a *App) attachmentsStrip(c *ui.Context, p palette) {
 		ui.Row(c).Gap(8).Wrap().Children(func() {
 			for _, att := range a.msg.Attachments {
 				att := att
-				card := ui.Row(c).Padding(6, 10).Radius(9).Background(p.Chip).Gap(8).AlignItems(ui.Center)
+				card := ui.Row(c).Padding(6, 10).Radius(9).Background(p.Chip).
+					Border(1, p.Border).Gap(8).AlignItems(ui.Center)
 				card.Tooltip("保存 " + att.Filename)
 				card.Children(func() {
 					ui.Box(c).Size(30, 30).Radius(7).Center().Background(p.Card).Children(func() {

@@ -51,7 +51,7 @@ func main() {
 			MinHeight:       560,
 			TitleBarStyle:   mygo.TitleBarHidden,
 			StateKey:        "main-window",
-			BackgroundColor: "light-dark(#eef0f4, #121216)",
+			BackgroundColor: "light-dark(#eef0f4, #0f1013)",
 			Content:         ui.View(app.View),
 		})
 		app.BindWindow(mainWindow)
@@ -60,7 +60,7 @@ func main() {
 		}
 
 		web, err := mainWindow.NewWebView(mygo.WebViewOptions{
-			BackgroundColor: "light-dark(#ffffff, #1d1d22)",
+			BackgroundColor: "light-dark(#ffffff, #17181c)",
 		})
 		if err != nil {
 			log.Printf("new web view: %v", err)

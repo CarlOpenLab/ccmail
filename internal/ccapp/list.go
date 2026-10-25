@@ -165,13 +165,10 @@ func (a *App) listRow(c *ui.Context, p palette, i int) {
 	unread := !env.Flags.Seen
 	selected := i == a.listSel
 
-	row := ui.Row(c).Padding(9, 10).Gap(10).AlignItems(ui.Start).Radius(10)
-	switch {
-	case selected:
-		row.Background(p.Selected)
-	case row.Hovered():
-		row.Background(p.Hover)
-	}
+	// The native list paints its chosen row in the accent color. The row it
+	// gets is only a shell; a filling child paints the design's quieter
+	// selection over it, so the accent stays for carets and switches.
+	row := ui.Row(c).Radius(10)
 
 	row.ContextMenu(func(menu *ui.Menu) {
 		starred := env.Flags.Flagged
@@ -211,87 +208,97 @@ func (a *App) listRow(c *ui.Context, p palette, i int) {
 		}
 	})
 
-	// The native list paints its chosen row in the accent color: text and
-	// icons follow it so the row stays readable.
-	onAccent := func(c ui.Color, alpha float32) ui.Color {
-		if !selected {
-			return c
+	onSel := func(normal, chosen ui.Color) ui.Color {
+		if selected {
+			return chosen
 		}
-		return p.AccentText.Alpha(alpha)
+		return normal
 	}
 	secondary := func(alpha float32) ui.Color {
 		if selected {
-			return p.AccentText.Alpha(alpha)
+			return p.SelectedMuted.Alpha(alpha)
 		}
 		return p.Faint
 	}
 
 	row.Children(func() {
-		ui.Avatar(c, displayName(env.From), nil).FontSize(16)
-
-		ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
-			ui.Row(c).Gap(6).AlignItems(ui.Center).Children(func() {
-				if unread && !selected {
-					ui.Box(c).Size(5, 5).Radius(3).Background(p.Accent)
-				}
-				name := ui.Text(c, displayName(env.From)).FontSize(13.5).SingleLine().Grow(1)
-				if unread {
-					name.Bold().TextColor(onAccent(p.Text, 1))
-				} else {
-					name.TextColor(onAccent(p.Muted, 1))
-				}
-				ui.Text(c, fmtListDate(env.Date)).FontSize(11.5).TextColor(secondary(1))
-			})
-
-			subj := ui.Text(c, env.Subject).FontSize(13.5).SingleLine()
-			if unread {
-				subj.Bold().TextColor(onAccent(p.Text, 1))
-			} else {
-				subj.TextColor(onAccent(p.Muted, 1))
+		fill := ui.Row(c).FillWidth().Padding(9, 10).Gap(10).Radius(10).AlignItems(ui.Start)
+		switch {
+		case selected:
+			fill.Background(p.SelectedRow)
+			if p.Dark {
+				fill.Border(1, p.Border)
 			}
+		case row.Hovered():
+			fill.Background(p.Hover)
+		}
+		fill.Children(func() {
+			ui.Avatar(c, displayName(env.From), nil).FontSize(16)
 
-			ui.Row(c).Gap(6).AlignItems(ui.Center).Children(func() {
-				snippet := env.Snippet
-				if a.prefs.Density == "compact" {
-					snippet = ""
-				}
-				if snippet != "" {
-					ui.Text(c, snippet).FontSize(12).TextColor(secondary(0.85)).SingleLine().Grow(1)
-				} else {
-					ui.Spacer(c)
-				}
-				if env.HasAttachments {
-					ui.Icon(c, iconClip).FontSize(13).TextColor(secondary(1))
-				}
-				if a.view.Kind != "folder" && m.AccountName != "" {
-					chip := ui.Row(c).Padding(1, 7).Radius(8).Gap(4).AlignItems(ui.Center)
-					if selected {
-						chip.Background(p.AccentText.Alpha(0.16))
+			ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
+				ui.Row(c).Gap(6).AlignItems(ui.Center).Children(func() {
+					if unread && !selected {
+						ui.Box(c).Size(5, 5).Radius(3).Background(p.Accent)
+					}
+					name := ui.Text(c, displayName(env.From)).FontSize(13.5).SingleLine().Grow(1)
+					if unread {
+						name.Bold().TextColor(onSel(p.Text, p.SelectedText))
 					} else {
-						chip.Background(p.Chip)
+						name.TextColor(onSel(p.Muted, p.SelectedMuted))
 					}
-					chip.Children(func() {
-						ui.Box(c).Size(5, 5).Radius(3).Background(ui.Hex(m.Color))
-						label := ui.Text(c, m.AccountName).FontSize(11).SingleLine().MaxWidth(80)
-						if selected {
-							label.TextColor(p.AccentText.Alpha(0.9))
-						} else {
-							label.TextColor(p.Muted)
-						}
-					})
-				}
-				star := ui.ButtonBase(c).Size(22, 22).Radius(6).Center().
-					Label(map[bool]string{true: "取消星标", false: "加星标"}[env.Flags.Flagged])
-				if env.Flags.Flagged {
-					star.Children(func() { ui.Icon(c, iconStarFill).FontSize(14).TextColor(p.Star) })
+					ui.Text(c, fmtListDate(env.Date)).FontSize(11.5).TextColor(secondary(1))
+				})
+
+				subj := ui.Text(c, env.Subject).FontSize(13.5).SingleLine()
+				if unread {
+					subj.Bold().TextColor(onSel(p.Text, p.SelectedText))
 				} else {
-					alpha := float32(0.42)
-					if row.Hovered() || selected {
-						alpha = 0.95
-					}
-					star.Children(func() { ui.Icon(c, iconStar).FontSize(14).TextColor(secondary(alpha)) })
+					subj.TextColor(onSel(p.Muted, p.SelectedMuted))
 				}
-				star.OnClick(func() { a.toggleStar(m) })
+
+				ui.Row(c).Gap(6).AlignItems(ui.Center).Children(func() {
+					snippet := env.Snippet
+					if a.prefs.Density == "compact" {
+						snippet = ""
+					}
+					if snippet != "" {
+						ui.Text(c, snippet).FontSize(12).TextColor(secondary(0.85)).SingleLine().Grow(1)
+					} else {
+						ui.Spacer(c)
+					}
+					if env.HasAttachments {
+						ui.Icon(c, iconClip).FontSize(13).TextColor(secondary(1))
+					}
+					if a.view.Kind != "folder" && m.AccountName != "" {
+						chip := ui.Row(c).Padding(1, 7).Radius(8).Gap(4).AlignItems(ui.Center)
+						if selected {
+							chip.Background(p.ChipDeep)
+						} else {
+							chip.Background(p.Chip)
+						}
+						chip.Children(func() {
+							ui.Box(c).Size(5, 5).Radius(3).Background(ui.Hex(m.Color))
+							label := ui.Text(c, m.AccountName).FontSize(11).SingleLine().MaxWidth(80)
+							if selected {
+								label.TextColor(p.SelectedText)
+							} else {
+								label.TextColor(p.Muted)
+							}
+						})
+					}
+					star := ui.ButtonBase(c).Size(22, 22).Radius(6).Center().
+						Label(map[bool]string{true: "取消星标", false: "加星标"}[env.Flags.Flagged])
+					if env.Flags.Flagged {
+						star.Children(func() { ui.Icon(c, iconStarFill).FontSize(14).TextColor(p.Star) })
+					} else {
+						alpha := float32(0.42)
+						if row.Hovered() || selected {
+							alpha = 0.95
+						}
+						star.Children(func() { ui.Icon(c, iconStar).FontSize(14).TextColor(secondary(alpha)) })
+					}
+					star.OnClick(func() { a.toggleStar(m) })
+				})
 			})
 		})
 	})

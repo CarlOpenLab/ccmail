@@ -9,9 +9,6 @@ import (
 // paints itself, such as the floating card and its hairline.
 type palette struct {
 	Dark bool
-	// Neutral is set when the chrome accent is graphite: badges and chips
-	// stay quiet instead of turning into bright pills.
-	Neutral bool
 
 	Window      ui.Color
 	Card        ui.Color
@@ -23,50 +20,30 @@ type palette struct {
 	BtnHover    ui.Color
 	Chip        ui.Color
 	ChipDeep    ui.Color
-	Selected    ui.Color
 
 	Text   ui.Color
 	Muted  ui.Color
 	Faint  ui.Color
 	Border ui.Color
 
+	// Accent drives carets, switches and the focused source-list item.
 	Accent     ui.Color
 	AccentText ui.Color
 	AccentSoft ui.Color
-	Danger     ui.Color
-	Success    ui.Color
-	Warning    ui.Color
-	Star       ui.Color
-	StarSoft   ui.Color
+	// CTA fills the primary action: near-black in light, near-white in dark.
+	CTA, CTAText, CTAHover ui.Color
+	// SelectedRow paints the chosen message, quieter than the CTA.
+	SelectedRow, SelectedText, SelectedMuted ui.Color
+	// FocusRing outlines keyboard focus.
+	FocusRing ui.Color
+
+	Danger   ui.Color
+	Success  ui.Color
+	Warning  ui.Color
+	Star     ui.Color
+	StarSoft ui.Color
 
 	Shadow ui.Color
-}
-
-// accentPreset is one choice of chrome accent. The default is graphite:
-// color comes from mail and accounts, not from the window itself.
-type accentPreset struct {
-	ID, Name    string
-	Light, Dark string
-}
-
-var accentPresets = []accentPreset{
-	{ID: "ink", Name: "石墨", Light: "#2b2e34", Dark: "#8b94a4"},
-	{ID: "indigo", Name: "靛蓝", Light: "#3b5bdb", Dark: "#8fa4ff"},
-	{ID: "moss", Name: "苔绿", Light: "#39664f", Dark: "#8cc7a8"},
-	{ID: "clay", Name: "陶土", Light: "#9c4f3b", Dark: "#e8a58c"},
-}
-
-func accentFor(id string, dark bool) (ui.Color, ui.Color, string) {
-	for _, a := range accentPresets {
-		if a.ID != id {
-			continue
-		}
-		if dark {
-			return ui.Hex(a.Dark), ui.Hex("#141414"), a.Dark
-		}
-		return ui.Hex(a.Light), ui.Hex("#ffffff"), a.Light
-	}
-	return accentFor("ink", dark)
 }
 
 // hexOf writes a color as #rrggbb for pages the app composes.
@@ -80,56 +57,51 @@ func hexOf(c ui.Color) string {
 	return string(out)
 }
 
-func hasAccent(id string) bool {
-	for _, a := range accentPresets {
-		if a.ID == id {
-			return true
-		}
-	}
-	return false
-}
-
-// badgeColors keeps counts readable: graphite chrome uses a chip, a colored
-// accent uses the accent fill.
+// badgeColors keeps counts readable without turning the sidebar into a
+// column of colored pills.
 func (p palette) badgeColors() (ui.Color, ui.Color) {
-	if p.Neutral {
-		return p.ChipDeep, p.Text
-	}
-	return p.Accent, p.AccentText
+	return p.ChipDeep, p.Text
 }
 
-func paletteFor(dark bool, accentID string) palette {
-	accent, onAccent, _ := accentFor(accentID, dark)
+func paletteFor(dark bool) palette {
 	if dark {
 		return palette{
 			Dark:        true,
-			Window:      ui.Hex("#121216"),
-			Card:        ui.Hex("#1d1d22"),
-			Popover:     ui.Hex("#232329"),
-			Sunken:      ui.Hex("#17171c"),
-			Hover:       ui.RGBA(255, 255, 255, 0.06),
-			HoverStrong: ui.RGBA(255, 255, 255, 0.09),
-			Btn:         ui.Hex("#26262c"),
-			BtnHover:    ui.Hex("#303038"),
+			Window:      ui.Hex("#0f1013"),
+			Card:        ui.Hex("#17181c"),
+			Popover:     ui.Hex("#1e1f24"),
+			Sunken:      ui.Hex("#131418"),
+			Hover:       ui.RGBA(255, 255, 255, 0.055),
+			HoverStrong: ui.RGBA(255, 255, 255, 0.085),
+			Btn:         ui.Hex("#23242a"),
+			BtnHover:    ui.Hex("#2c2d34"),
 			Chip:        ui.RGBA(255, 255, 255, 0.06),
-			ChipDeep:    ui.RGBA(255, 255, 255, 0.105),
-			Selected:    accent.Alpha(0.18),
+			ChipDeep:    ui.RGBA(255, 255, 255, 0.10),
 
-			Text:   ui.Hex("#f0f0f4"),
-			Muted:  ui.Hex("#a7a7b3"),
-			Faint:  ui.Hex("#92929e"),
-			Border: ui.RGBA(255, 255, 255, 0.075),
+			Text:   ui.Hex("#ececf0"),
+			Muted:  ui.Hex("#a6a6b1"),
+			Faint:  ui.Hex("#91919d"),
+			Border: ui.RGBA(255, 255, 255, 0.085),
 
-			Accent:     accent,
-			AccentText: onAccent,
-			AccentSoft: accent.Alpha(0.13),
-			Danger:     ui.Hex("#ff6961"),
-			Success:    ui.Hex("#4fd17a"),
-			Warning:    ui.Hex("#f0a33a"),
-			Star:       ui.Hex("#f0b429"),
-			StarSoft:   ui.RGBA(240, 180, 41, 0.15),
+			Accent:     ui.Hex("#8b94a4"),
+			AccentText: ui.Hex("#141414"),
+			AccentSoft: ui.RGBA(255, 255, 255, 0.07),
+			CTA:        ui.Hex("#e8e9ed"),
+			CTAText:    ui.Hex("#14151a"),
+			CTAHover:   ui.Hex("#f4f5f7"),
 
-			Shadow: ui.RGBA(0, 0, 0, 0.45),
+			SelectedRow:   ui.Hex("#2e313a"),
+			SelectedText:  ui.Hex("#f3f4f7"),
+			SelectedMuted: ui.RGBA(243, 244, 247, 0.62),
+			FocusRing:     ui.Hex("#a7adba"),
+
+			Danger:   ui.Hex("#ff6961"),
+			Success:  ui.Hex("#4fd17a"),
+			Warning:  ui.Hex("#f0a33a"),
+			Star:     ui.Hex("#f0b429"),
+			StarSoft: ui.RGBA(240, 180, 41, 0.15),
+
+			Shadow: ui.RGBA(0, 0, 0, 0.5),
 		}
 	}
 	return palette{
@@ -143,21 +115,29 @@ func paletteFor(dark bool, accentID string) palette {
 		BtnHover:    ui.Hex("#e8eaee"),
 		Chip:        ui.RGBA(15, 18, 35, 0.045),
 		ChipDeep:    ui.RGBA(15, 18, 35, 0.075),
-		Selected:    accent.Alpha(0.13),
 
 		Text:   ui.Hex("#18181b"),
 		Muted:  ui.Hex("#64646e"),
 		Faint:  ui.Hex("#6b6b75"),
 		Border: ui.RGBA(15, 18, 35, 0.07),
 
-		Accent:     accent,
-		AccentText: onAccent,
-		AccentSoft: accent.Alpha(0.09),
-		Danger:     ui.Hex("#d93a35"),
-		Success:    ui.Hex("#22863a"),
-		Warning:    ui.Hex("#b57c10"),
-		Star:       ui.Hex("#a06c00"),
-		StarSoft:   ui.RGBA(160, 108, 0, 0.11),
+		Accent:     ui.Hex("#2b2e34"),
+		AccentText: ui.Hex("#ffffff"),
+		AccentSoft: ui.Hex("#2b2e34").Alpha(0.09),
+		CTA:        ui.Hex("#23262b"),
+		CTAText:    ui.Hex("#ffffff"),
+		CTAHover:   ui.Hex("#15171b"),
+
+		SelectedRow:   ui.Hex("#2b2e34"),
+		SelectedText:  ui.Hex("#ffffff"),
+		SelectedMuted: ui.RGBA(255, 255, 255, 0.72),
+		FocusRing:     ui.Hex("#2b2e34"),
+
+		Danger:   ui.Hex("#d93a35"),
+		Success:  ui.Hex("#22863a"),
+		Warning:  ui.Hex("#b57c10"),
+		Star:     ui.Hex("#a06c00"),
+		StarSoft: ui.RGBA(160, 108, 0, 0.11),
 
 		Shadow: ui.RGBA(16, 18, 35, 0.16),
 	}
@@ -165,10 +145,9 @@ func paletteFor(dark bool, accentID string) palette {
 
 // themed sets the widget theme from the app palette and returns both: the
 // widgets (buttons, fields, lists) then match the surfaces painted here.
-func themed(c *ui.Context, accentID string) (palette, *ui.Theme) {
+func themed(c *ui.Context) (palette, *ui.Theme) {
 	base := *c.Theme()
-	p := paletteFor(base.Dark, accentID)
-	p.Neutral = !hasAccent(accentID) || accentID == "ink"
+	p := paletteFor(base.Dark)
 
 	t := base
 	t.Background = p.Window
@@ -185,8 +164,8 @@ func themed(c *ui.Context, accentID string) (palette, *ui.Theme) {
 	t.Danger = p.Danger
 	t.Warning = p.Warning
 	t.Success = p.Success
-	t.Selection = p.Selected
-	t.Focus = p.Accent
+	t.Selection = p.Accent.Alpha(0.25)
+	t.Focus = p.FocusRing
 	t.Scrollbar = p.Faint.Alpha(0.5)
 	t.ScrollbarWidth = 10
 	t.Radius = 8

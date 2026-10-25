@@ -75,9 +75,6 @@ func TestRenderScreens(t *testing.T) {
 	shot("sidebar-rail", 1280, 800, false, func(a *App) {
 		a.prefs.SidebarShut = true
 	})
-	shot("moss-dark", 1280, 800, true, func(a *App) {
-		a.prefs.Accent = "moss"
-	})
 	shot("narrow", 900, 560, false, nil)
 	shot("phone-list", 820, 640, false, func(a *App) {
 		a.sel = nil

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/egoist/mygo"
@@ -102,6 +103,8 @@ func replySubject(s string) string {
 	return "Re: " + s
 }
 
+var imageTag = regexp.MustCompile(`(?is)<img\b[^>]*>`)
+
 // quoteDate writes the original's date in full for a reply's attribution.
 func quoteDate(s string) string {
 	if t, ok := parseDate(s); ok {
@@ -118,6 +121,8 @@ func quotedText(m *mailx.FullMessage) richtext.Text {
 	var t richtext.Text
 	if m.HTML != "" {
 		if clean, _, err := sanitizeEmail(m.HTML, m, false); err == nil {
+			// a reply quotes the words, not the newsletter's images
+			clean = imageTag.ReplaceAllString(clean, "")
 			t = richtext.ParseHTML(clean)
 		}
 	}
@@ -234,11 +239,11 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 			body.Children(func() {
 				rt := richtext.DefaultTheme(c.Theme())
 				rt.Link = p.Accent
-				rt.Selection = p.Selected
-				rt.QuoteBar = p.Faint.Alpha(0.55)
+				rt.Selection = p.Accent.Alpha(0.25)
+				rt.QuoteBar = p.Muted.Alpha(0.7)
 				rt.QuoteText = p.Muted
 				rt.QuoteBarWidth = 3
-				richtext.Editor(c, cs.Doc, richtext.EditorOptions{
+				richtext.EditorBase(c, cs.Doc, richtext.EditorOptions{
 					Placeholder: "写下你想说的…",
 					Theme:       rt,
 				}).Grow(1).Padding(12, 18)
@@ -272,11 +277,12 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 					ui.Spinner(c)
 					ui.Text(c, "正在发送…").FontSize(12).TextColor(p.Faint)
 				} else {
-					ui.PrimaryButton(c, "").Height(32).Padding(0, 14).Gap(7).Label("发送").
-						Disabled(cs.Sending).Children(func() {
-						ui.Icon(c, iconSend).FontSize(14).TextColor(p.AccentText)
-						ui.Text(c, "发送").FontSize(13).Bold().TextColor(p.AccentText)
-					}).OnClick(func() { a.sendCompose() })
+					send := a.ctaBase(c, p, "发送").Disabled(cs.Sending)
+					send.Children(func() {
+						ui.Icon(c, iconSend).FontSize(14).TextColor(p.CTAText)
+						ui.Text(c, "发送").FontSize(13).Bold().TextColor(p.CTAText)
+					})
+					send.OnClick(func() { a.sendCompose() })
 					ui.Button(c, "取消").OnClick(func() { a.compose = nil })
 				}
 				ui.Spacer(c)

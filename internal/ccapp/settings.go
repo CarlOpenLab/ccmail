@@ -163,7 +163,7 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 						}
 						ui.Spacer(c)
 						ui.Button(c, "取消").OnClick(func() { a.editAccount = "" })
-						ui.PrimaryButton(c, "保存").OnClick(func() {
+						a.cta(c, p, "保存").OnClick(func() {
 							name := strings.TrimSpace(a.editName)
 							a.patchAccount(acc.ID, name, a.editColor)
 							a.editAccount = ""
@@ -197,10 +197,12 @@ func (a *App) settingsAccounts(c *ui.Context, p palette) {
 	})
 
 	ui.Row(c).Gap(8).Margin(4, 0, 0, 0).Children(func() {
-		ui.PrimaryButton(c, "").Height(32).Padding(0, 14).Gap(6).Label("添加账号").Children(func() {
-			ui.Icon(c, iconPlus).FontSize(14).TextColor(p.AccentText)
-			ui.Text(c, "添加账号").FontSize(13).Bold().TextColor(p.AccentText)
-		}).OnClick(func() {
+		add := a.ctaBase(c, p, "添加账号")
+		add.Children(func() {
+			ui.Icon(c, iconPlus).FontSize(14).TextColor(p.CTAText)
+			ui.Text(c, "添加账号").FontSize(13).Bold().TextColor(p.CTAText)
+		})
+		add.OnClick(func() {
 			a.wizard = newWizard()
 		})
 	})
@@ -233,36 +235,6 @@ func (a *App) settingsAppearance(c *ui.Context, p palette) {
 		applyThemePref(a.prefs.Theme)
 		a.loadBody()
 	}
-
-	groupTitle(c, p, "强调色")
-	ui.Row(c).Gap(14).Children(func() {
-		for _, pr := range accentPresets {
-			pr := pr
-			hex := pr.Light
-			if p.Dark {
-				hex = pr.Dark
-			}
-			chip := ui.Column(c).Gap(5).AlignItems(ui.Center).Children(func() {
-				sw := ui.Box(c).Size(24, 24).Radius(12).Background(ui.Hex(hex))
-				if pr.ID == a.prefs.Accent {
-					sw.Shadow(0, 0, 0, 2, p.Text)
-				} else {
-					sw.Border(1, p.Border)
-				}
-				label := ui.Text(c, pr.Name).FontSize(11)
-				if pr.ID == a.prefs.Accent {
-					label.TextColor(p.Text)
-				} else {
-					label.TextColor(p.Faint)
-				}
-			})
-			chip.OnClick(func() {
-				a.prefs.Accent = pr.ID
-				a.savePrefs()
-				a.loadBody()
-			})
-		}
-	})
 
 	groupTitle(c, p, "窗口底色")
 	ui.Row(c).Gap(10).Children(func() {

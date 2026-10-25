@@ -32,7 +32,6 @@ func loadPrefs() Prefs {
 	return Prefs{
 		Theme:         get("theme", "auto"),
 		Wash:          get("wash", "plain"),
-		Accent:        get("accent", "ink"),
 		Density:       get("density", "cozy"),
 		MarkRead:      get("markRead", "1") != "0",
 		Notifications: get("notifications", "on") != "off",
@@ -48,7 +47,6 @@ func defaultPrefs() Prefs {
 	return Prefs{
 		Theme:         "auto",
 		Wash:          "plain",
-		Accent:        "ink",
 		Density:       "cozy",
 		MarkRead:      true,
 		Notifications: true,
@@ -66,7 +64,6 @@ func (a *App) savePrefs() {
 	prefs.SetMany(map[string]string{
 		"theme":         a.prefs.Theme,
 		"wash":          a.prefs.Wash,
-		"accent":        a.prefs.Accent,
 		"density":       a.prefs.Density,
 		"markRead":      on(a.prefs.MarkRead),
 		"notifications": map[bool]string{true: "on", false: "off"}[a.prefs.Notifications],
@@ -418,7 +415,7 @@ func (a *App) loadBody() {
 		a.web.Page().LoadHTML(emptyReaderHTML(), "")
 		return
 	}
-	accent := paletteFor(isDarkNow(), a.prefs.Accent).Accent
+	accent := paletteFor(isDarkNow()).Accent
 	doc, blocked, err := renderMailHTML(a.msg, a.allowImages, accent)
 	a.blockedImages = blocked
 	if err != nil {

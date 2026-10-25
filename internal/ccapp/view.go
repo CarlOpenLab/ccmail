@@ -13,7 +13,7 @@ import (
 // View builds the window: title bar, sidebar, and the card that holds the
 // message list beside the reader.
 func (a *App) View(c *ui.Context) {
-	p, _ := themed(c, a.prefs.Accent)
+	p, _ := themed(c)
 	a.drainToasts(c)
 
 	a.tickSearch()
@@ -127,7 +127,7 @@ func (a *App) onboarding(c *ui.Context, p palette) {
 		ui.Text(c, "欢迎来到 ccmail").FontSize(19).Bold().TextColor(p.Text)
 		ui.Text(c, "添加你的第一个邮箱账号（QQ、Gmail、163、Outlook、iCloud 或自定义 IMAP），开始收发邮件。").
 			FontSize(13).TextColor(p.Muted).TextAlign(ui.Center).MaxWidth(410).LineHeight(1.7)
-		ui.PrimaryButton(c, "添加邮箱账号").MinWidth(160).OnClick(func() { a.openWizard() })
+		a.cta(c, p, "添加邮箱账号").MinWidth(160).OnClick(func() { a.openWizard() })
 	})
 }
 
@@ -159,16 +159,35 @@ func (a *App) titlebar(c *ui.Context, p palette, bar ui.TitleBar, compact, narro
 			a.iconButton(c, iconMoon, "切换深浅色", p, func() { a.toggleTheme() })
 			a.iconButton(c, iconSettings, "设置", p, func() { a.settings = true })
 			ui.Box(c).Width(1).Height(18).Background(p.Border)
-			compose := ui.PrimaryButton(c, "").Height(32).Padding(0, 13).Gap(7).Label("写邮件")
+			compose := a.ctaBase(c, p, "写邮件").Padding(0, 13).Gap(7)
 			compose.Children(func() {
-				ui.Icon(c, iconSend).FontSize(15).TextColor(p.AccentText)
+				ui.Icon(c, iconSend).FontSize(15).TextColor(p.CTAText)
 				if !compact {
-					ui.Text(c, "写邮件").FontSize(13).Bold().TextColor(p.AccentText)
+					ui.Text(c, "写邮件").FontSize(13).Bold().TextColor(p.CTAText)
 				}
 			})
 			compose.OnClick(func() { a.openCompose("new", nil) })
 		})
 	})
+}
+
+// ctaBase is the primary action button: near-black in light, near-white in
+// dark, with the button role and keyboard handling of the widget.
+func (a *App) ctaBase(c *ui.Context, p palette, label string) ui.Element {
+	b := ui.Button(c, "").Height(32).Padding(0, 14).Gap(6).Radius(9).Label(label)
+	b.Background(p.CTA)
+	if b.Hovered() {
+		b.Background(p.CTAHover)
+	}
+	b.TextColor(p.CTAText)
+	return b
+}
+
+// cta is ctaBase showing a text label.
+func (a *App) cta(c *ui.Context, p palette, label string) ui.Element {
+	b := a.ctaBase(c, p, label)
+	b.Children(func() { ui.Text(c, label).FontSize(13).Bold().TextColor(p.CTAText) })
+	return b
 }
 
 func (a *App) iconButton(c *ui.Context, icon *ui.SVG, label string, p palette, onClick func()) {

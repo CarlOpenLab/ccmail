@@ -208,8 +208,8 @@ func renderMailHTML(m *mailx.FullMessage, allowRemote bool, accent ui.Color) (st
 func mailDocument(body string, dark bool, accent ui.Color) string {
 	fg, bg, quotes, codeBg := "#1d1d21", "#ffffff", "#67677a", "#f4f5f8"
 	if dark {
-		fg, bg, quotes, codeBg = "#ececf1", "#1d1d22", "#a0a0ac", "#26262d"
-		accent = ui.Hex("#c9cbd2")
+		fg, bg, quotes, codeBg = "#ececf0", "#17181c", "#91919d", "#1f2026"
+		accent = ui.Hex("#b7bec9")
 	}
 	link := hexOf(accent)
 	return `<!doctype html><html><head><meta charset="utf-8"><meta name="color-scheme" content="` +

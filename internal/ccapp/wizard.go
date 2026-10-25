@@ -146,7 +146,7 @@ func (a *App) wizardForm(c *ui.Context, p palette, w *Wizard) {
 		ui.Button(c, "高级设置").OnClick(func() { w.Advanced = !w.Advanced })
 		ui.Spacer(c)
 		ui.Button(c, "上一步").OnClick(func() { w.Step = 1; w.Err = "" })
-		ui.PrimaryButton(c, "连接并添加").OnClick(func() { a.startConnect(w) })
+		a.cta(c, p, "连接并添加").OnClick(func() { a.startConnect(w) })
 	})
 
 	if w.Advanced {
@@ -202,7 +202,7 @@ func (a *App) wizardDone(c *ui.Context, p palette, w *Wizard) {
 		}
 		ui.Text(c, "收件箱正在后台同步，新邮件会实时出现。").FontSize(12.5).TextColor(p.Faint)
 		ui.Row(c).Gap(8).Margin(10, 0, 0, 0).Children(func() {
-			ui.PrimaryButton(c, "打开收件箱").OnClick(func() {
+			a.cta(c, p, "打开收件箱").OnClick(func() {
 				a.wizard = nil
 				a.navigate(ViewSel{Kind: "unified", Name: "全部收件箱"})
 			})
