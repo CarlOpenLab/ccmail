@@ -130,6 +130,7 @@
   "wizardNamePlaceholder": "例如：工作邮箱",
   "wizardPassword": "授权码",
   "wizardPasswordPlaceholder": "IMAP / SMTP 授权码或应用专用密码",
+  "wizardHelpLink": "如何获取？查看官方指引",
   "wizardColor": "颜色 ",
   "wizardAdvanced": "高级设置",
   "wizardImapServer": "IMAP 服务器",

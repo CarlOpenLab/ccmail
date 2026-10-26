@@ -42,7 +42,7 @@ func SetFlags(a *store.Account, mailbox string, uids []uint32, patch FlagPatch) 
 				op = imap.StoreFlagsDel
 			}
 			sf := imap.StoreFlags{Op: op, Flags: []imap.Flag{p.flag}, Silent: true}
-			if err := c.Store(&set, &sf, nil).Close(); err != nil {
+			if err := c.Store(set, &sf, nil).Close(); err != nil {
 				return errf(502, "更新标记失败：%s", explain(err))
 			}
 		}
@@ -80,7 +80,7 @@ func MoveMessages(a *store.Account, from string, uids []uint32, dest string) err
 		if _, err := c.Select(from, nil).Wait(); err != nil {
 			return errf(404, "邮箱不存在：%s", from)
 		}
-		if _, err := c.Move(&set, dest).Wait(); err != nil {
+		if _, err := c.Move(set, dest).Wait(); err != nil {
 			return errf(502, "移动失败：%s", explain(err))
 		}
 		return nil
@@ -113,7 +113,7 @@ func expunge(a *store.Account, mailbox string, uids []uint32) error {
 		if _, err := c.Select(mailbox, nil).Wait(); err != nil {
 			return errf(404, "邮箱不存在：%s", mailbox)
 		}
-		if err := c.Store(&set, &imap.StoreFlags{Op: imap.StoreFlagsAdd, Flags: []imap.Flag{"\\Deleted"}, Silent: true}, nil).Close(); err != nil {
+		if err := c.Store(set, &imap.StoreFlags{Op: imap.StoreFlagsAdd, Flags: []imap.Flag{"\\Deleted"}, Silent: true}, nil).Close(); err != nil {
 			return errf(502, "删除失败：%s", explain(err))
 		}
 		if err := c.Expunge().Close(); err != nil {

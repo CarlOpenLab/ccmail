@@ -4,6 +4,15 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [未发布]
+
+### 新增
+- 添加账号向导在各服务商步骤下新增「如何获取？查看官方指引」链接，点击后用系统浏览器打开对应服务商的官方页面（授权码 / 应用专用密码的开启与生成步骤）
+
+### 修复
+- 修复打开收件箱闪退：go-imap v2 的 `Fetch`/`Store`/`Move` 只接受值类型 `imap.UIDSet`，此前传指针触发 `panic: imap: invalid NumSet type`，同步 goroutine 一跑起来整个进程就崩
+- 修复收件箱只显示 2 封邮件：`fetchRange` 误用 `UIDSetNum(from, to)`（这是两个单点 UID，不是区间），改为 `AddRange`，首次同步恢复拉取近 800 封窗口
+
 ## [2.2.0] - 2026-10-25
 
 ### 新增

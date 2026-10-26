@@ -113,6 +113,13 @@ func (a *App) wizardForm(c *ui.Context, p palette, w *Wizard) {
 	if hint != "" {
 		ui.Text(c, hint).FontSize(12).TextColor(p.Faint).Margin(0, 0, 12, 0).LineHeight(1.6)
 	}
+	if pr != nil && pr.HelpURL != "" {
+		link := ui.ButtonBase(c).Label(locales.WizardHelpLink()).Margin(0, 0, 14, 0)
+		link.OnClick(func() { c.OpenURL(pr.HelpURL) })
+		link.Children(func() {
+			ui.Text(c, locales.WizardHelpLink()).FontSize(12).TextColor(p.Accent)
+		})
+	}
 
 	ui.Form(c, func() {
 		ui.Field(c, locales.WizardEmail(), func() {

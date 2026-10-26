@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"ccmail/internal/providers"
 	"ccmail/locales"
 	"github.com/egoist/mygo/ui"
 )
@@ -110,6 +111,40 @@ func TestSettingsAndWizardOpen(t *testing.T) {
 	}
 	if !tt.HasText(locales.WizardPickProvider()) {
 		t.Fatal("provider step not shown")
+	}
+}
+
+func TestWizardHelpLinkOpensProviderGuide(t *testing.T) {
+	a, tt := newTestApp(t)
+	if err := tt.Click(locales.MiscSettings()); err != nil {
+		t.Fatalf("click settings: %v", err)
+	}
+	tt.Frame()
+	if err := tt.Click(locales.SettingsAddAccount()); err != nil {
+		t.Fatalf("click add account: %v", err)
+	}
+	tt.Frame()
+	if err := tt.Click("QQ 邮箱"); err != nil {
+		t.Fatalf("click provider tile: %v", err)
+	}
+	tt.Frame()
+	if a.wizard == nil || a.wizard.Step != 2 {
+		t.Fatalf("form step not shown: %+v", a.wizard)
+	}
+	if !tt.HasText(locales.WizardHelpLink()) {
+		t.Fatal("help link not shown on the form")
+	}
+	if err := tt.Click(locales.WizardHelpLink()); err != nil {
+		t.Fatalf("click help link: %v", err)
+	}
+	tt.Frame()
+	want := providers.ByID("qq").HelpURL
+	if want == "" {
+		t.Fatal("qq preset has no help URL")
+	}
+	opened := tt.OpenedURLs()
+	if len(opened) == 0 || opened[len(opened)-1] != want {
+		t.Fatalf("opened %q, want %q", opened, want)
 	}
 }
 

@@ -136,5 +136,5 @@ Everyday commits and PRs run the `CI` workflow: `gofmt` / `go vet` / `go tool my
 
 ## Notes
 
-- Gmail / QQ / 163 and friends require an "auth code / app-specific password" instead of your web login password — the wizard includes guidance for each.
+- Gmail / QQ / 163 and friends require an "auth code / app specific password" instead of your web login password — the wizard includes guidance for each, with a link to the provider's official page for generating it.
 - Meant for personal self-hosting; if you expose it to the public network, add your own reverse proxy and authentication.

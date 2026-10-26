@@ -178,12 +178,15 @@ func fetchRange(c *imapclient.Client, fromUID, toUID uint32) ([]*Envelope, error
 	if toUID < fromUID || toUID == 0 {
 		return nil, nil
 	}
-	set := imap.UIDSetNum(imap.UID(fromUID), imap.UID(toUID))
+	// AddRange, not UIDSetNum: UIDSetNum(a, b) is the two single UIDs a and
+	// b, not the range a:b.
+	set := imap.UIDSet{}
+	set.AddRange(imap.UID(fromUID), imap.UID(toUID))
 	options := &imap.FetchOptions{
 		UID: true, Envelope: true, Flags: true, InternalDate: true, RFC822Size: true,
 		BodyStructure: &imap.FetchItemBodyStructure{Extended: false},
 	}
-	cmd := c.Fetch(&set, options)
+	cmd := c.Fetch(set, options)
 	buffers, err := cmd.Collect()
 	if err != nil {
 		return nil, errf(502, "拉取邮件列表失败：%s", explain(err))
@@ -210,7 +213,7 @@ func refreshFlags(c *imapclient.Client, messages []*Envelope) {
 	}
 	set := imap.UIDSet{}
 	set.AddRange(imap.UID(minUID), imap.UID(maxUID))
-	cmd := c.Fetch(&set, &imap.FetchOptions{UID: true, Flags: true})
+	cmd := c.Fetch(set, &imap.FetchOptions{UID: true, Flags: true})
 	buffers, err := cmd.Collect()
 	if err != nil {
 		return

@@ -9,7 +9,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"mime"
+	"net"
 	"net/smtp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -253,6 +255,7 @@ func Send(a *store.Account, out *Outgoing) (*SendResult, error) {
 	if a.SMTP == nil || a.SMTP.Host == "" {
 		return nil, &mailx.Error{Msg: "账号未配置 SMTP 服务器", Status: 400}
 	}
+
 	password := a.Password()
 	if password == "" {
 		return nil, &mailx.Error{Msg: "账号凭据读取失败", Status: 400}
@@ -263,7 +266,7 @@ func Send(a *store.Account, out *Outgoing) (*SendResult, error) {
 	if port == 0 {
 		port = 465
 	}
-	addr := fmt.Sprintf("%s:%d", host, port)
+	addr := net.JoinHostPort(host, strconv.Itoa(port))
 
 	var client *smtp.Client
 	var err error
@@ -322,7 +325,7 @@ func Verify(host string, port int, secure bool, user, password string) error {
 	if port == 0 {
 		port = 465
 	}
-	addr := fmt.Sprintf("%s:%d", host, port)
+	addr := net.JoinHostPort(host, strconv.Itoa(port))
 	var client *smtp.Client
 	var err error
 	if secure {

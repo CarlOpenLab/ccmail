@@ -1339,6 +1339,16 @@ func (msgs Messages) WizardPasswordPlaceholder() string {
 	return Catalog.Format(msgs.locale, "wizardPasswordPlaceholder", nil)
 }
 
+// WizardHelpLink says "How to get this code — official guide"
+// in the language the app shows.
+func WizardHelpLink() string { return In(i18n.Locale()).WizardHelpLink() }
+
+// WizardHelpLink says "How to get this code — official guide"
+// in the language of msgs.
+func (msgs Messages) WizardHelpLink() string {
+	return Catalog.Format(msgs.locale, "wizardHelpLink", nil)
+}
+
 // WizardColor says "Color "
 // in the language the app shows.
 func WizardColor() string { return In(i18n.Locale()).WizardColor() }

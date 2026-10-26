@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -50,7 +51,7 @@ func dial(server *store.Account) (*imapclient.Client, error) {
 	if port == 0 {
 		port = 993
 	}
-	addr := fmt.Sprintf("%s:%d", host, port)
+	addr := net.JoinHostPort(host, strconv.Itoa(port))
 	tlsCfg := &tls.Config{ServerName: host}
 
 	var client *imapclient.Client
@@ -143,7 +144,7 @@ func DialWatcher(a *store.Account) (*imapclient.Client, error) {
 
 // VerifyIMAP tests one IMAP login (used by the add-account wizard).
 func VerifyIMAP(host string, port int, secure bool, user, password string) error {
-	addr := fmt.Sprintf("%s:%d", host, port)
+	addr := net.JoinHostPort(host, strconv.Itoa(port))
 	tlsCfg := &tls.Config{ServerName: host}
 	var client *imapclient.Client
 	var err error

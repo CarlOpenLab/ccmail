@@ -168,6 +168,7 @@
   "wizardNamePlaceholder": "e.g. Work mailbox",
   "wizardPassword": "Auth code or app password",
   "wizardPasswordPlaceholder": "IMAP / SMTP auth code or app password",
+  "wizardHelpLink": "How to get this code — official guide",
   "wizardColor": "Color ",
   "wizardAdvanced": "Advanced",
   "wizardImapServer": "IMAP server",

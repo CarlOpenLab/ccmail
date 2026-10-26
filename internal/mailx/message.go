@@ -37,7 +37,7 @@ func GetMessage(a *store.Account, mailbox string, uid uint32, markSeen bool) (*F
 			UID:         true,
 			BodySection: []*imap.FetchItemBodySection{{Peek: true}},
 		}
-		cmd := c.Fetch(&set, options)
+		cmd := c.Fetch(set, options)
 		defer cmd.Close()
 		var raw []byte
 		for {
