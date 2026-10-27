@@ -346,6 +346,19 @@ img, svg { display: block; }
 .star-on { color: var(--star); flex-shrink: 0; }
 .star-off { color: var(--faint); opacity: 0.42; flex-shrink: 0; }
 .mrow.sel .star-off { color: var(--muted); opacity: 0.9; }
+.list-morefoot {
+  margin: 0 10px 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  height: 30px; border: 1px solid var(--border); border-radius: 9px;
+  background: var(--card); font-size: 12px; color: var(--muted);
+  transition: background 0.15s, border-color 0.15s;
+}
+.list-morefoot:hover { background: var(--hover); border-color: var(--border-strong); color: var(--text); }
+
+/* Show Ctrl instead of ⌘ for non-macOS visitors */
+.mod::after { content: "⌘"; }
+.non-mac kbd .mod::after { content: "Ctrl "; }
+.non-mac .fcard .mod::after { content: "Ctrl"; }
 
 .mock-reader { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .reader-head { padding: 20px 22px 0; }
@@ -574,7 +587,7 @@ kbd {
 
 <header class="hero" id="top">
   <div class="container hero-inner">
-    <span class="eyebrow-chip"><i class="dot"></i>v2.2.0 · Native Go + mygo controls</span>
+    <span class="eyebrow-chip"><i class="dot"></i>v2.2.1 · Native Go + mygo controls</span>
     <h1>Every mailbox.<br>One <span class="hl">quiet</span> inbox.</h1>
     <p class="lede">ccmail is a quiet, focused email client for multiple accounts: Gmail, QQ Mail, 163, Outlook, iCloud and any IMAP / SMTP service, unified in a single window. The interface is drawn with native Go controls — no web frontend — and your credentials never leave this machine unencrypted.</p>
     <div class="hero-cta">
@@ -591,6 +604,7 @@ kbd {
       <span>Free &amp; open source</span>
       <span>macOS · Windows · Linux</span>
       <span>Single binary</span>
+      <span>English / 简体中文 UI</span>
       <span>No telemetry</span>
     </div>
 
@@ -670,7 +684,7 @@ kbd {
                 <div class="list-title-row">
                   <div class="list-title">
                     <h2>Unified Inbox</h2>
-                    <p>128 messages · 3 accounts</p>
+                    <p>154 messages · 3 accounts</p>
                   </div>
                   <span class="list-more">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
@@ -684,8 +698,8 @@ kbd {
                   <span class="avatar" style="background:rgba(138,148,232,0.16);color:#5a68c9">G</span>
                   <span class="meta">
                     <span class="mline"><i class="udot"></i><span class="mname">GitHub</span><span class="mtime">14:32</span></span>
-                    <span class="msub">[CarlOpenLab/ccmail] Release v2.2.0 published</span>
-                    <span class="mprev"><span class="msnip">carlopenlab released v2.2.0 in CarlOpenLab/ccmail…</span><span class="acct-chip"><i style="background:#8a94e8"></i>Work</span></span>
+                    <span class="msub">[CarlOpenLab/ccmail] Release v2.2.1 published</span>
+                    <span class="mprev"><span class="msnip">carlopenlab released v2.2.1 in CarlOpenLab/ccmail…</span><span class="acct-chip"><i style="background:#8a94e8"></i>Work</span></span>
                   </span>
                 </div>
                 <div class="mrow unread">
@@ -732,9 +746,13 @@ kbd {
                   <span class="meta">
                     <span class="mline"><span class="mname">App Store Connect</span><span class="mtime">Yesterday</span></span>
                     <span class="msub">Your monthly bill is ready</span>
-                    <span class="mprev"><span class="msnip">Your October developer membership bill is ready…</span><span class="acct-chip"><i style="background:#6fae9e"></i>Personal</span></span>
+                    <span class="mprev"><span class="msnip">October's developer membership bill is ready…</span><span class="acct-chip"><i style="background:#6fae9e"></i>Personal</span></span>
                   </span>
                 </div>
+              </div>
+              <div class="list-morefoot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                Load more (50 / 154)
               </div>
             </div>
             <div class="mock-reader">
@@ -835,17 +853,17 @@ kbd {
       <div class="fcard reveal">
         <div class="fglyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
         <h3>Rich composing</h3>
-        <p>Bold, italic, underline, lists, links and paste formatting, drag-and-drop attachments and <code>⌘ + Enter</code> to send. Reply, reply-all and forward are one keystroke away; sent mail is archived automatically.</p>
+        <p>Bold, italic, underline, lists, links and paste formatting, drag-and-drop attachments and <code><span class="mod"></span> + Enter</code> to send. Reply, reply-all and forward are one keystroke away; sent mail is archived automatically.</p>
       </div>
       <div class="fcard reveal">
         <div class="fglyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <h3>Unified accounts</h3>
-        <p>A unified inbox and starred views, accounts color-coded and one click away in the title bar. Incremental sync via UIDVALIDITY + UIDNEXT, envelopes cached locally, bodies fetched on demand.</p>
+        <p>A unified inbox and starred views, accounts color-coded and one click away in the title bar. The list keeps loading older mail as you reach the bottom. Incremental sync via UIDVALIDITY + UIDNEXT, envelopes cached locally, bodies fetched on demand.</p>
       </div>
       <div class="fcard reveal">
         <div class="fglyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
         <h3>At home on the desktop</h3>
-        <p>Desktop notifications with sender and subject — click to focus the window. Tray menu, programmatic app icon, light / dark / follow-system, and a sidebar that collapses to icons (<code>⌘B</code>).</p>
+        <p>Desktop notifications with sender and subject — click to focus the window. Tray menu, programmatic app icon, light / dark / follow-system, and a sidebar that collapses to icons (<code><span class="mod"></span>B</code>).</p>
       </div>
     </div>
   </div>
@@ -869,9 +887,9 @@ kbd {
       <div class="sc"><span>Star</span><span class="keys"><kbd>S</kbd></span></div>
       <div class="sc"><span>Archive</span><span class="keys"><kbd>E</kbd></span></div>
       <div class="sc"><span>Delete</span><span class="keys"><kbd>Del</kbd></span></div>
-      <div class="sc"><span>Search</span><span class="keys"><kbd>/</kbd><kbd>⌘K</kbd></span></div>
-      <div class="sc"><span>Collapse sidebar</span><span class="keys"><kbd>⌘B</kbd></span></div>
-      <div class="sc"><span>Send message</span><span class="keys"><kbd>⌘↵</kbd></span></div>
+      <div class="sc"><span>Search</span><span class="keys"><kbd>/</kbd><kbd><span class="mod"></span>K</kbd></span></div>
+      <div class="sc"><span>Collapse sidebar</span><span class="keys"><kbd><span class="mod"></span>B</kbd></span></div>
+      <div class="sc"><span>Send message</span><span class="keys"><kbd><span class="mod"></span>↵</kbd></span></div>
     </div>
   </div>
 </section>
@@ -932,7 +950,7 @@ kbd {
   <div class="container">
     <div class="section-head reveal">
       <div class="eyebrow">Download</div>
-      <h2>Download ccmail 2.2.0</h2>
+      <h2>Download ccmail 2.2.1</h2>
       <p class="lead">GitHub Releases carries installers for macOS, Windows and Linux — or build straight from source with Go.</p>
     </div>
     <div class="dl-grid reveal">
@@ -941,7 +959,7 @@ kbd {
           <span class="dl-os"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M16.36 12.76c.03 3.27 2.87 4.36 2.9 4.38-.02.07-.45 1.55-1.5 3.06-.9 1.31-1.84 2.62-3.32 2.65-1.45.03-1.92-.85-3.58-.85-1.66 0-2.18.82-3.55.88-1.42.05-2.5-1.42-3.41-2.73-1.86-2.69-3.28-7.6-1.37-10.92.95-1.65 2.64-2.69 4.48-2.72 1.4-.03 2.72.94 3.58.94.85 0 2.46-1.16 4.15-.99.7.03 2.69.28 3.96 2.14-.1.07-2.36 1.38-2.34 4.16M13.6 3.85c.75-.91 1.26-2.18 1.12-3.44-1.08.04-2.39.72-3.17 1.63-.7.8-1.31 2.1-1.15 3.33 1.21.1 2.44-.61 3.2-1.52"/></svg></span>
           <b>macOS<span>Apple Silicon &amp; Intel</span></b>
         </span>
-        <span class="dl-file">ccmail 2.2.0.dmg</span>
+        <span class="dl-file">ccmail 2.2.1.dmg</span>
         <span class="dl-go">Get it
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </span>
@@ -951,7 +969,7 @@ kbd {
           <span class="dl-os"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.55 10.6 4.5v7.1H3V5.55Zm0 12.9 7.6 1.05v-7.05H3v6Zm8.4 1.2L22 21V12.4h-10.6v7.25Zm0-15.4v7.25H22V3l-10.6 1.25Z"/></svg></span>
           <b>Windows<span>10 / 11, WebView2 required</span></b>
         </span>
-        <span class="dl-file">ccmail Setup 2.2.0 amd64.exe</span>
+        <span class="dl-file">ccmail Setup 2.2.1 amd64.exe</span>
         <span class="dl-go">Get it
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </span>
@@ -1011,6 +1029,9 @@ kbd {
 <script>
 (function () {
   var root = document.documentElement;
+  if (!/mac|iphone|ipad|ipod/i.test(navigator.platform || navigator.userAgent)) {
+    root.classList.add("non-mac");
+  }
   var toggle = document.getElementById("themeToggle");
   toggle.addEventListener("click", function () {
     var next = root.dataset.theme === "dark" ? "light" : "dark";
