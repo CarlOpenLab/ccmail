@@ -9,11 +9,13 @@ import (
 	"github.com/emersion/go-imap/v2/imapclient"
 
 	"ccmail/internal/store"
+	"ccmail/locales"
 )
 
 const (
 	syncWindow = 800 // recent messages kept per mailbox
-	pageSize   = 50
+	// PageSize is how many messages one page of the list holds.
+	PageSize = 50
 )
 
 func addrOf(a imap.Address) Addr {
@@ -37,7 +39,7 @@ func addrList(list []imap.Address) []Addr {
 func mapEnvelope(b *imapclient.FetchMessageBuffer) *Envelope {
 	env := &Envelope{
 		UID:     uint32(b.UID),
-		Subject: "(无主题)",
+		Subject: locales.MiscNoSubject(),
 		Date:    b.InternalDate.Format(time.RFC3339),
 		Flags:   EnvelopeFlags{Seen: hasFlag(b.Flags, "\\Seen"), Flagged: hasFlag(b.Flags, "\\Flagged"), Answered: hasFlag(b.Flags, "\\Answered"), Draft: hasFlag(b.Flags, "\\Draft")},
 		Size:    b.RFC822Size,
@@ -58,7 +60,7 @@ func mapEnvelope(b *imapclient.FetchMessageBuffer) *Envelope {
 		}
 	}
 	if env.From.Email == "" && env.From.Name == "" {
-		env.From = Addr{Name: "未知发件人"}
+		env.From = Addr{Name: locales.MiscUnknownSender()}
 	}
 	env.HasAttachments = bodyHasAttachments(b.BodyStructure)
 	return env
@@ -109,7 +111,7 @@ func syncAndGetEnvelopes(a *store.Account, mailbox string) (*envDoc, error) {
 	err := withClient(a, func(c *imapclient.Client) error {
 		sel, err := c.Select(mailbox, nil).Wait()
 		if err != nil {
-			return errf(404, "邮箱不存在：%s", mailbox)
+			return errf(404, "%s", locales.ErrMailboxMissing(mailbox))
 		}
 		uidValidity := uint64ToString(uint64(sel.UIDValidity))
 		uidNext := uint32(sel.UIDNext)
@@ -189,7 +191,7 @@ func fetchRange(c *imapclient.Client, fromUID, toUID uint32) ([]*Envelope, error
 	cmd := c.Fetch(set, options)
 	buffers, err := cmd.Collect()
 	if err != nil {
-		return nil, errf(502, "拉取邮件列表失败：%s", explain(err))
+		return nil, errf(502, "%s", locales.ErrFetchList(explain(err)))
 	}
 	out := make([]*Envelope, 0, len(buffers))
 	for _, b := range buffers {
@@ -272,17 +274,23 @@ func CachedEnvelopes(accountID, mailbox string) []*Envelope {
 	return nil
 }
 
+// ApplyQuery filters and sorts envelopes the way ListMessages does, for
+// callers that already hold the rows in memory.
+func ApplyQuery(rows []*Envelope, q Query) []*Envelope {
+	return applyQuery(rows, q)
+}
+
 func pageOf(rows []*Envelope, page int) *ListResult {
-	start := (page - 1) * pageSize
+	start := (page - 1) * PageSize
 	if start > len(rows) {
 		start = len(rows)
 	}
-	end := start + pageSize
+	end := start + PageSize
 	if end > len(rows) {
 		end = len(rows)
 	}
 	return &ListResult{
-		Total: len(rows), Page: page, PageSize: pageSize,
+		Total: len(rows), Page: page, PageSize: PageSize,
 		Messages: rows[start:end],
 	}
 }

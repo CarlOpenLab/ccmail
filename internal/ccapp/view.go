@@ -85,11 +85,7 @@ func (a *App) drainToasts(c *ui.Context) {
 		return
 	}
 	for _, t := range a.toasts {
-		if t.kind == "error" {
-			c.Toast(t.text)
-		} else {
-			c.Toast(t.text)
-		}
+		c.AddToast(ui.Toast{Title: t.text, Type: t.kind})
 	}
 	a.toasts = nil
 }
@@ -206,7 +202,8 @@ func (a *App) iconButton(c *ui.Context, icon *ui.SVG, label string, p palette, o
 	b.OnClick(onClick)
 }
 
-// accountDots shows the mounted accounts as colored initials.
+// accountDots shows the mounted accounts as colored initials; clicking one
+// jumps to that account's inbox.
 func (a *App) accountDots(c *ui.Context, p palette) {
 	if len(a.accounts) == 0 {
 		return
@@ -216,15 +213,28 @@ func (a *App) accountDots(c *ui.Context, p palette) {
 			if i == 3 {
 				break
 			}
-			if len(acc.Folders) == 0 && acc.ID == "" {
+			if acc.ID == "" {
 				continue
 			}
-			dot := ui.Box(c).Size(27, 27).Radius(14).Center().Background(ui.Hex(acc.Color))
+			active := a.view.Kind == "folder" && a.view.AccountID == acc.ID
+			dot := ui.ButtonBase(c).Size(27, 27).Radius(14).Center().Background(ui.Hex(acc.Color)).
+				Label(locales.TitlebarSwitchAccount(acc.Name))
+			if active {
+				dot.Border(2, p.Text)
+			}
 			dot.Tooltip(acc.Name + "\n" + acc.Email)
 			dot.Children(func() {
 				ui.Text(c, accountBadge(acc)).FontSize(11).Bold().TextColor(ui.Hex("#ffffff"))
 			})
-			_ = i
+			dot.OnClick(func() {
+				name := locales.MiscInbox()
+				for _, f := range acc.Folders {
+					if f.Kind == "inbox" {
+						name = f.Name
+					}
+				}
+				a.navigate(ViewSel{Kind: "folder", AccountID: acc.ID, Path: "INBOX", Name: name})
+			})
 		}
 	})
 }
@@ -261,7 +271,7 @@ func (a *App) toggleTheme() {
 	a.loadBody()
 }
 
-// searchBar is the title bar's field: magnifier, input, clear key.
+// clamp01 pins v to the 0–1 range.
 func clamp01(v float32) float32 {
 	if v < 0 {
 		return 0
@@ -272,8 +282,6 @@ func clamp01(v float32) float32 {
 	return v
 }
 
-// toggleSidebar collapses the sidebar to its rail, or opens the drawer when
-// the window is too narrow for one.
 // sidebarToggle collapses the sidebar to its rail, or opens the drawer on a
 // narrow window.
 func (a *App) sidebarToggle(c *ui.Context, p palette, narrow bool) {
@@ -282,14 +290,17 @@ func (a *App) sidebarToggle(c *ui.Context, p palette, narrow bool) {
 		btn.Background(p.HoverStrong)
 	}
 	if narrow {
-		btn.Label(locales.TitlebarOpenSidebar()).Tooltip(locales.TitlebarOpenSidebar() + " (⌘B)")
+		btn.Label(locales.TitlebarOpenSidebar()).Tooltip(locales.TitlebarOpenSidebar() + " (" + modKey() + "B)")
 		btn.Children(func() { ui.Icon(c, iconMenu).FontSize(18).TextColor(p.Muted) })
 		btn.OnClick(func() { a.sidebarOpen = !a.sidebarOpen })
 		return
 	}
 	shut := a.prefs.SidebarShut
 	btn.Label(map[bool]string{true: locales.TitlebarExpandSidebar(), false: locales.TitlebarCollapseSidebar()}[shut]).
-		Tooltip(map[bool]string{true: locales.TitlebarExpandSidebar() + " (⌘B)", false: locales.TitlebarCollapseSidebar() + " (⌘B)"}[shut])
+		Tooltip(map[bool]string{
+			true:  locales.TitlebarExpandSidebar() + " (" + modKey() + "B)",
+			false: locales.TitlebarCollapseSidebar() + " (" + modKey() + "B)",
+		}[shut])
 	icon := iconSidebarCollapse
 	if shut {
 		icon = iconSidebarExpand
@@ -311,6 +322,7 @@ func (a *App) tickSearch() {
 	}
 }
 
+// searchBar is the title bar's field: magnifier, input, clear key.
 func (a *App) searchBar(c *ui.Context, p palette, compact, narrow bool) {
 	width := float32(420)
 	if narrow {

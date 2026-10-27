@@ -27,7 +27,7 @@ func (a *App) readerPane(c *ui.Context, p palette, compact bool) {
 			return
 		case a.msgErr != "":
 			ui.Column(c).Fill().Center().Gap(8).Padding(36).Children(func() {
-				ui.Icon(c, iconJunk).FontSize(28).TextColor(p.Danger)
+				ui.Icon(c, iconAlert).FontSize(28).TextColor(p.Danger)
 				ui.Text(c, locales.ReaderLoadFailed()).FontSize(15).Bold().TextColor(p.Text)
 				ui.Text(c, a.msgErr).FontSize(12.5).TextColor(p.Muted).TextAlign(ui.Center)
 				ui.Row(c).Gap(8).Children(func() {
@@ -43,9 +43,6 @@ func (a *App) readerPane(c *ui.Context, p palette, compact bool) {
 			})
 			return
 		}
-
-		m := a.msg
-		_ = m
 
 		a.readerHeader(c, p, compact)
 
@@ -102,7 +99,6 @@ func (a *App) emptyReader(c *ui.Context, p palette) {
 // readerHeader is the subject, sender, details and actions above the body.
 func (a *App) readerHeader(c *ui.Context, p palette, compact bool) {
 	m := a.msg
-	env := m
 	flagged := false
 	if a.sel != nil {
 		flagged = a.sel.Env.Flags.Flagged
@@ -121,14 +117,14 @@ func (a *App) readerHeader(c *ui.Context, p palette, compact bool) {
 				a.loadBody()
 			})
 		}
-		ui.Text(c, firstNonEmpty(env.Subject, locales.MiscNoSubject())).FontSize(21).Bold().
+		ui.Text(c, firstNonEmpty(m.Subject, locales.MiscNoSubject())).FontSize(21).Bold().
 			TextColor(p.Text).LineHeight(1.3).MaxLines(2)
 
 		ui.Row(c).Gap(12).AlignItems(ui.Start).Children(func() {
-			ui.Avatar(c, displayName(env.From), nil).FontSize(19)
+			ui.Avatar(c, displayName(m.From), nil).FontSize(19)
 			ui.Column(c).Grow(1).Gap(2).Children(func() {
 				ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-					ui.Text(c, displayName(env.From)).FontSize(14.5).Bold().TextColor(p.Text)
+					ui.Text(c, displayName(m.From)).FontSize(14.5).Bold().TextColor(p.Text)
 					if acc := a.accountVM(a.sel.AccountID); acc != nil {
 						chip := ui.Row(c).Padding(1, 7).Radius(8).Background(p.Chip).Gap(4).AlignItems(ui.Center)
 						chip.Children(func() {
@@ -137,16 +133,16 @@ func (a *App) readerHeader(c *ui.Context, p palette, compact bool) {
 						})
 					}
 				})
-				ui.Text(c, env.From.Email).FontSize(12.5).TextColor(p.Faint).SingleLine()
-				ui.Text(c, locales.ReaderTo()+firstNonEmpty(addrLine(env.To), locales.MiscMe())).FontSize(12).
+				ui.Text(c, m.From.Email).FontSize(12.5).TextColor(p.Faint).SingleLine()
+				ui.Text(c, locales.ReaderTo()+firstNonEmpty(addrLine(m.To), locales.MiscMe())).FontSize(12).
 					TextColor(p.Faint).SingleLine()
 			})
-			ui.Text(c, fmtFullDate(env.Date)).FontSize(11.5).TextColor(p.Faint).Margin(0, 0, 0, 8)
+			ui.Text(c, fmtFullDate(m.Date)).FontSize(11.5).TextColor(p.Faint).Margin(0, 0, 0, 8)
 		})
 
 		ui.Row(c).Gap(4).Margin(10, 0, 0, 0).AlignItems(ui.Center).Children(func() {
 			a.pill(c, p, iconReply, locales.ReaderReply(), func() { a.openCompose("reply", a.sel) })
-			if len(env.To) > 1 || len(env.Cc) > 0 {
+			if len(m.To) > 1 || len(m.Cc) > 0 {
 				a.pill(c, p, iconReplyAll, locales.ReaderReplyAll(), func() { a.openCompose("replyAll", a.sel) })
 			}
 			a.pill(c, p, iconForward, locales.ReaderForward(), func() { a.openCompose("forward", a.sel) })

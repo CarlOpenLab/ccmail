@@ -13,7 +13,6 @@ type palette struct {
 	Window      ui.Color
 	Card        ui.Color
 	Popover     ui.Color
-	Sunken      ui.Color
 	Hover       ui.Color
 	HoverStrong ui.Color
 	Btn         ui.Color
@@ -37,11 +36,10 @@ type palette struct {
 	// FocusRing outlines keyboard focus.
 	FocusRing ui.Color
 
-	Danger   ui.Color
-	Success  ui.Color
-	Warning  ui.Color
-	Star     ui.Color
-	StarSoft ui.Color
+	Danger  ui.Color
+	Success ui.Color
+	Warning ui.Color
+	Star    ui.Color
 
 	Shadow ui.Color
 }
@@ -70,7 +68,6 @@ func paletteFor(dark bool) palette {
 			Window:      ui.Hex("#0f1013"),
 			Card:        ui.Hex("#17181c"),
 			Popover:     ui.Hex("#1e1f24"),
-			Sunken:      ui.Hex("#131418"),
 			Hover:       ui.RGBA(255, 255, 255, 0.055),
 			HoverStrong: ui.RGBA(255, 255, 255, 0.085),
 			Btn:         ui.Hex("#23242a"),
@@ -90,16 +87,15 @@ func paletteFor(dark bool) palette {
 			CTAText:    ui.Hex("#14151a"),
 			CTAHover:   ui.Hex("#f4f5f7"),
 
-			SelectedRow:   ui.Hex("#343945"),
+			SelectedRow:   ui.Hex("#2f3441"),
 			SelectedText:  ui.Hex("#f3f4f7"),
 			SelectedMuted: ui.RGBA(243, 244, 247, 0.62),
 			FocusRing:     ui.Hex("#7f8795"),
 
-			Danger:   ui.Hex("#ff6961"),
-			Success:  ui.Hex("#4fd17a"),
-			Warning:  ui.Hex("#f0a33a"),
-			Star:     ui.Hex("#f0b429"),
-			StarSoft: ui.RGBA(240, 180, 41, 0.15),
+			Danger:  ui.Hex("#ff6961"),
+			Success: ui.Hex("#4fd17a"),
+			Warning: ui.Hex("#f0a33a"),
+			Star:    ui.Hex("#f0b429"),
 
 			Shadow: ui.RGBA(0, 0, 0, 0.5),
 		}
@@ -108,7 +104,6 @@ func paletteFor(dark bool) palette {
 		Window:      ui.Hex("#eef0f4"),
 		Card:        ui.Hex("#ffffff"),
 		Popover:     ui.Hex("#ffffff"),
-		Sunken:      ui.Hex("#f4f5f8"),
 		Hover:       ui.RGBA(15, 18, 35, 0.055),
 		HoverStrong: ui.RGBA(15, 18, 35, 0.085),
 		Btn:         ui.Hex("#f2f3f5"),
@@ -128,16 +123,17 @@ func paletteFor(dark bool) palette {
 		CTAText:    ui.Hex("#ffffff"),
 		CTAHover:   ui.Hex("#15171b"),
 
-		SelectedRow:   ui.Hex("#2b2e34"),
-		SelectedText:  ui.Hex("#ffffff"),
-		SelectedMuted: ui.RGBA(255, 255, 255, 0.72),
+		// the chosen message is a quiet gray with deep text, matching the
+		// site's spec (#e4e7ec): near-black with white text read as a heavy bar
+		SelectedRow:   ui.Hex("#e4e7ec"),
+		SelectedText:  ui.Hex("#18181b"),
+		SelectedMuted: ui.RGBA(24, 24, 27, 0.62),
 		FocusRing:     ui.Hex("#2b2e34"),
 
-		Danger:   ui.Hex("#d93a35"),
-		Success:  ui.Hex("#22863a"),
-		Warning:  ui.Hex("#b57c10"),
-		Star:     ui.Hex("#a06c00"),
-		StarSoft: ui.RGBA(160, 108, 0, 0.11),
+		Danger:  ui.Hex("#d93a35"),
+		Success: ui.Hex("#22863a"),
+		Warning: ui.Hex("#b57c10"),
+		Star:    ui.Hex("#a06c00"),
 
 		Shadow: ui.RGBA(16, 18, 35, 0.16),
 	}

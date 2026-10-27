@@ -285,7 +285,7 @@ func (a *App) composeModal(c *ui.Context, p palette) {
 					ui.Button(c, locales.MiscCancel()).OnClick(func() { a.compose = nil })
 				}
 				ui.Spacer(c)
-				ui.Text(c, locales.ComposeSendHint()).FontSize(11).TextColor(p.Faint)
+				ui.Text(c, locales.ComposeSendHint(modKey())).FontSize(11).TextColor(p.Faint)
 			})
 		})
 		if c.Shortcut(ui.Cmd, ui.KeyEnter) {

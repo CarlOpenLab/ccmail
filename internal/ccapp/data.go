@@ -203,9 +203,6 @@ func filterName(i int) string {
 func (a *App) reloadList(reset bool) {
 	if reset {
 		a.page = 1
-		if a.query != "" || a.filter != 0 {
-			// a fresh search keeps the selected message only if it re-appears
-		}
 	}
 	view, query, filter, page := a.view, a.query, filterName(a.filter), a.page
 	a.loading = true
@@ -229,10 +226,20 @@ func (a *App) reloadList(reset bool) {
 			if reset {
 				a.msgs = rows
 			} else {
-				a.msgs = append(a.msgs, rows...)
+				// the cache may have shifted between pages; never show a row twice
+				seen := make(map[string]bool, len(a.msgs)+len(rows))
+				for _, m := range a.msgs {
+					seen[m.Key()] = true
+				}
+				for _, m := range rows {
+					if !seen[m.Key()] {
+						seen[m.Key()] = true
+						a.msgs = append(a.msgs, m)
+					}
+				}
 			}
 			a.total = total
-			a.more = len(a.msgs) < total
+			a.more = len(a.msgs) < total && len(rows) > 0
 			a.rebuildRows()
 			a.syncListSelection()
 		})
@@ -250,9 +257,6 @@ func (a *App) syncListSelection() {
 				break
 			}
 		}
-	}
-	if a.listSel >= 0 {
-		a.listKey = a.sel.Key()
 	}
 	a.list.Selected = &a.listSel
 }
@@ -275,68 +279,47 @@ func fetchList(view ViewSel, query, filter string, page int) ([]*MsgRef, int, er
 		return out, res.Total, nil
 	}
 
-	// unified / starred: aggregate cached INBOX envelopes
-	var out []*MsgRef
+	// unified / starred: aggregate cached INBOX envelopes, paged like a
+	// folder view so older mail stays reachable
+	var all []*MsgRef
 	for _, acct := range store.All() {
 		rows := mailx.CachedEnvelopes(acct.ID, "INBOX")
 		if rows == nil {
 			watchers.KickInboxSync(acct)
 			continue
 		}
+		if view.Kind == "flagged" {
+			rows = mailx.ApplyQuery(rows, mailx.Query{Filter: "flagged"})
+		} else if query != "" || filter != "" {
+			rows = mailx.ApplyQuery(rows, mailx.Query{Search: query, Filter: filter})
+		}
 		vm := accountVMFromStore(acct)
 		for _, env := range rows {
-			if view.Kind == "flagged" && !env.Flags.Flagged {
-				continue
-			}
-			if !envelopeMatches(env, query, filter) {
-				continue
-			}
-			out = append(out, &MsgRef{AccountID: vm.ID, AccountName: vm.Name, Color: vm.Color, Path: "INBOX", Env: env})
+			all = append(all, &MsgRef{AccountID: vm.ID, AccountName: vm.Name, Color: vm.Color, Path: "INBOX", Env: env})
 		}
 	}
-	sort.SliceStable(out, func(i, j int) bool {
-		ti, oki := parseDate(out[i].Env.Date)
-		tj, okj := parseDate(out[j].Env.Date)
+	sort.SliceStable(all, func(i, j int) bool {
+		ti, oki := parseDate(all[i].Env.Date)
+		tj, okj := parseDate(all[j].Env.Date)
 		if oki && okj {
 			return ti.After(tj)
 		}
-		return out[i].Env.Date > out[j].Env.Date
+		return all[i].Env.Date > all[j].Env.Date
 	})
-	if len(out) > 150 {
-		out = out[:150]
+	total := len(all)
+	start := (page - 1) * mailx.PageSize
+	if start > total {
+		start = total
 	}
-	return out, len(out), nil
+	end := start + mailx.PageSize
+	if end > total {
+		end = total
+	}
+	return all[start:end], total, nil
 }
 
 func accountVMFromStore(s *store.Account) *AccountVM {
 	return &AccountVM{ID: s.ID, Name: s.Name, Email: s.Email, Color: s.Color, Provider: s.Provider}
-}
-
-func envelopeMatches(env *mailx.Envelope, query, filter string) bool {
-	switch filter {
-	case "unread":
-		if env.Flags.Seen {
-			return false
-		}
-	case "flagged":
-		if !env.Flags.Flagged {
-			return false
-		}
-	case "attachments":
-		if !env.HasAttachments {
-			return false
-		}
-	}
-	if query != "" {
-		q := strings.ToLower(query)
-		if !strings.Contains(strings.ToLower(env.Subject), q) &&
-			!strings.Contains(strings.ToLower(env.From.Name), q) &&
-			!strings.Contains(strings.ToLower(env.From.Email), q) &&
-			!strings.Contains(strings.ToLower(env.Snippet), q) {
-			return false
-		}
-	}
-	return true
 }
 
 // navigate shows a view and loads its first page.
@@ -661,18 +644,26 @@ func (a *App) patchAccount(id, name, color string) {
 // --------------------------------------------------------------- subscribe
 
 // SubscribeToWorkers redraws the window for sync events, coalescing bursts
-// into one reload.
+// into one reload. A bare account-status flip only recolors the sidebar; it
+// must not throw the user back to the list's first page.
 func (a *App) SubscribeToWorkers() {
 	var mu sync.Mutex
 	var pending *time.Timer
-	schedule := func() {
+	var names map[string]bool
+	schedule := func(name string) {
 		mu.Lock()
 		defer mu.Unlock()
+		if names == nil {
+			names = map[string]bool{}
+		}
+		names[name] = true
 		if pending != nil {
 			return
 		}
 		pending = time.AfterFunc(500*time.Millisecond, func() {
 			mu.Lock()
+			got := names
+			names = nil
 			pending = nil
 			mu.Unlock()
 			a.update(func() {
@@ -684,7 +675,13 @@ func (a *App) SubscribeToWorkers() {
 				}
 				a.statuses = statuses
 				a.recomputeUnread()
-				if a.view.Kind != "folder" {
+				mailChanged := false
+				for n := range got {
+					if n != "account:status" {
+						mailChanged = true
+					}
+				}
+				if mailChanged && a.view.Kind != "folder" {
 					a.reloadList(true)
 				}
 			})
@@ -693,7 +690,7 @@ func (a *App) SubscribeToWorkers() {
 	hub.Subscribe(func(ev hub.Event) {
 		switch ev.Name {
 		case "account:status", "mail:counts", "accounts:changed", "flags:changed", "message:updated":
-			schedule()
+			schedule(ev.Name)
 		}
 	})
 }

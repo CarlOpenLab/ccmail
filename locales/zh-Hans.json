@@ -96,7 +96,7 @@
   "composePlaceholder": "写下你想说的…",
   "composeToPlaceholder": "name@example.com，多人用逗号分隔",
   "composeSend": "发送",
-  "composeSendHint": "⌘ + Enter 发送 · 拖拽文件到正文以添加附件",
+  "composeSendHint": "{mod} + Enter 发送 · 拖拽文件到正文以添加附件",
   "composeBold": "加粗 (⌘B)",
   "composeItalic": "倾斜 (⌘I)",
   "composeUnderline": "下划线 (⌘U)",
@@ -204,7 +204,7 @@
   "settingsScDelete": "删除",
   "settingsScStar": "加星标",
   "settingsScSearch": "搜索邮件",
-  "settingsScSearchKey": "/ 或 ⌘K",
+  "settingsScSearchKey": "/ 或 {mod}K",
   "settingsScClose": "关闭阅读区或对话框",
   "settingsScSidebar": "收起侧栏",
   "settingsAboutTagline": "v{version} · 多账号 IMAP / SMTP 邮件客户端",
@@ -231,5 +231,154 @@
   "onboardingHint": "添加你的第一个邮箱账号（QQ、Gmail、163、Outlook、iCloud 或自定义 IMAP），开始收发邮件。",
   "miscQuestion": "？",
   "wizardConnectAccount": "连接账号",
-  "wizardDefaultFrom": "默认与邮箱地址相同"
+  "wizardDefaultFrom": "默认与邮箱地址相同",
+  "listLoadingMore": "正在加载更多…",
+  "errNoImap": "账号未配置 IMAP 服务器",
+  "errConnect": "无法连接服务器：{err}",
+  "errAuth": "认证失败：请检查邮箱地址与密码/授权码是否正确",
+  "errConnectHint": "无法连接服务器：请检查服务器地址与端口，或本机网络",
+  "errTLSPrefix": "TLS/证书错误：{err}",
+  "errDemo": "演示账号没有 IMAP 连接",
+  "errListMailboxes": "读取邮箱列表失败：{err}",
+  "errMailboxMissing": "邮箱不存在：{mailbox}",
+  "errFetchList": "拉取邮件列表失败：{err}",
+  "errSetFlags": "更新标记失败：{err}",
+  "errMove": "移动失败：{err}",
+  "errDelete": "删除失败：{err}",
+  "errExpunge": "清理失败：{err}",
+  "errNoArchive": "未找到归档邮箱",
+  "errAppendSent": "写入已发送失败：{err}",
+  "errFetchMessage": "邮件拉取失败",
+  "errParseMessage": "邮件解析失败：{err}",
+  "errNoSmtp": "账号未配置 SMTP 服务器",
+  "errCreds": "账号凭据读取失败",
+  "errSmtpConnect": "发送失败：无法连接 SMTP（{err}）",
+  "errSmtpAuth": "发送失败：SMTP 认证失败（{err}）",
+  "errSendPrefix": "发送失败：{err}",
+  "errVerifyConnect": "无法连接 SMTP（{err}）",
+  "errVerifyAuth": "SMTP 认证失败（{err}）",
+  "errVerify": "SMTP 验证失败（{err}）",
+  "wizardAdvancedShow": "高级服务器设置",
+  "wizardAdvancedHide": "收起高级设置",
+  "@errTLSPrefix": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errConnect": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errMove": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errExpunge": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errParseMessage": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errFetchList": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errDelete": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errSendPrefix": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errSetFlags": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errAppendSent": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errVerify": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errListMailboxes": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errSmtpConnect": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errSmtpAuth": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errMailboxMissing": {
+    "placeholders": {
+      "mailbox": {
+        "type": "String"
+      }
+    }
+  },
+  "@errVerifyAuth": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errVerifyConnect": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "errAttachmentMissing": "附件不存在",
+  "titlebarSwitchAccount": "切换到 {account}"
 }

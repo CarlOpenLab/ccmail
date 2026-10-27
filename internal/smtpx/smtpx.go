@@ -17,6 +17,7 @@ import (
 
 	"ccmail/internal/mailx"
 	"ccmail/internal/store"
+	"ccmail/locales"
 )
 
 // Recipient is one envelope recipient.
@@ -111,7 +112,7 @@ func BuildMIME(fromName, fromEmail string, out *Outgoing) []byte {
 	if len(out.Cc) > 0 {
 		writeHeader("Cc", strings.Join(mapRecipients(out.Cc, formatAddr), ", "))
 	}
-	writeHeader("Subject", encodeHeader(orDefault(out.Subject, "(无主题)")))
+	writeHeader("Subject", encodeHeader(orDefault(out.Subject, locales.MiscNoSubject())))
 	writeHeader("Date", time.Now().Format("Mon, 02 Jan 2006 15:04:05 -0700"))
 	writeHeader("Message-ID", msgID)
 	writeHeader("MIME-Version", "1.0")
@@ -248,17 +249,17 @@ type SendResult struct {
 // Send submits the message through the account's SMTP server.
 func Send(a *store.Account, out *Outgoing) (*SendResult, error) {
 	if len(out.To) == 0 {
-		return nil, &mailx.Error{Msg: "请填写收件人", Status: 400}
+		return nil, &mailx.Error{Msg: locales.ComposeNeedRecipient(), Status: 400}
 	}
 	raw := BuildMIME(a.Name, a.Email, out)
 
 	if a.SMTP == nil || a.SMTP.Host == "" {
-		return nil, &mailx.Error{Msg: "账号未配置 SMTP 服务器", Status: 400}
+		return nil, &mailx.Error{Msg: locales.ErrNoSmtp(), Status: 400}
 	}
 
 	password := a.Password()
 	if password == "" {
-		return nil, &mailx.Error{Msg: "账号凭据读取失败", Status: 400}
+		return nil, &mailx.Error{Msg: locales.ErrCreds(), Status: 400}
 	}
 
 	host := a.SMTP.Host
@@ -283,32 +284,32 @@ func Send(a *store.Account, out *Outgoing) (*SendResult, error) {
 		}
 	}
 	if err != nil {
-		return nil, &mailx.Error{Msg: "发送失败：无法连接 SMTP（" + err.Error() + "）", Status: 502}
+		return nil, &mailx.Error{Msg: locales.ErrSmtpConnect(err.Error()), Status: 502}
 	}
 	defer client.Close()
 
 	auth := smtp.PlainAuth("", a.Auth.User, password, host)
 	if err := client.Auth(auth); err != nil {
-		return nil, &mailx.Error{Msg: "发送失败：SMTP 认证失败（" + err.Error() + "）", Status: 502}
+		return nil, &mailx.Error{Msg: locales.ErrSmtpAuth(err.Error()), Status: 502}
 	}
 	if err := client.Mail(a.Email); err != nil {
-		return nil, &mailx.Error{Msg: "发送失败：" + err.Error(), Status: 502}
+		return nil, &mailx.Error{Msg: locales.ErrSendPrefix(err.Error()), Status: 502}
 	}
 	all := append(append(append([]Recipient{}, out.To...), out.Cc...), out.Bcc...)
 	for _, r := range all {
 		if err := client.Rcpt(r.Email); err != nil {
-			return nil, &mailx.Error{Msg: "发送失败：" + err.Error(), Status: 502}
+			return nil, &mailx.Error{Msg: locales.ErrSendPrefix(err.Error()), Status: 502}
 		}
 	}
 	w, err := client.Data()
 	if err != nil {
-		return nil, &mailx.Error{Msg: "发送失败：" + err.Error(), Status: 502}
+		return nil, &mailx.Error{Msg: locales.ErrSendPrefix(err.Error()), Status: 502}
 	}
 	if _, err := w.Write(raw); err != nil {
-		return nil, &mailx.Error{Msg: "发送失败：" + err.Error(), Status: 502}
+		return nil, &mailx.Error{Msg: locales.ErrSendPrefix(err.Error()), Status: 502}
 	}
 	if err := w.Close(); err != nil {
-		return nil, &mailx.Error{Msg: "发送失败：" + err.Error(), Status: 502}
+		return nil, &mailx.Error{Msg: locales.ErrSendPrefix(err.Error()), Status: 502}
 	}
 	_ = client.Quit()
 
@@ -341,14 +342,14 @@ func Verify(host string, port int, secure bool, user, password string) error {
 		}
 	}
 	if err != nil {
-		return fmt.Errorf("无法连接 SMTP（%v）", err)
+		return fmt.Errorf("%s", locales.ErrVerifyConnect(err.Error()))
 	}
 	defer client.Close()
 	if err := client.Auth(smtp.PlainAuth("", user, password, host)); err != nil {
-		return fmt.Errorf("SMTP 认证失败（%v）", err)
+		return fmt.Errorf("%s", locales.ErrVerifyAuth(err.Error()))
 	}
 	if err := client.Noop(); err != nil {
-		return fmt.Errorf("SMTP 验证失败（%v）", err)
+		return fmt.Errorf("%s", locales.ErrVerify(err.Error()))
 	}
 	return nil
 }

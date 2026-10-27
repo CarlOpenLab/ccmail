@@ -114,7 +114,7 @@ func (a *App) wizardForm(c *ui.Context, p palette, w *Wizard) {
 		ui.Text(c, hint).FontSize(12).TextColor(p.Faint).Margin(0, 0, 12, 0).LineHeight(1.6)
 	}
 	if pr != nil && pr.HelpURL != "" {
-		link := ui.ButtonBase(c).Label(locales.WizardHelpLink()).Margin(0, 0, 14, 0)
+		link := ui.ButtonBase(c).Label(locales.WizardHelpLink()).Margin(0, 0, 14, 0).AlignSelf(ui.Start)
 		link.OnClick(func() { c.OpenURL(pr.HelpURL) })
 		link.Children(func() {
 			ui.Text(c, locales.WizardHelpLink()).FontSize(12).TextColor(p.Accent)
@@ -151,7 +151,8 @@ func (a *App) wizardForm(c *ui.Context, p palette, w *Wizard) {
 	}
 
 	ui.Row(c).Gap(8).Margin(6, 0, 0, 0).Children(func() {
-		ui.Button(c, locales.WizardAdvanced()).OnClick(func() { w.Advanced = !w.Advanced })
+		adv := ui.Button(c, map[bool]string{true: locales.WizardAdvancedHide(), false: locales.WizardAdvancedShow()}[w.Advanced])
+		adv.OnClick(func() { w.Advanced = !w.Advanced })
 		ui.Spacer(c)
 		ui.Button(c, locales.WizardBack()).OnClick(func() { w.Step = 1; w.Err = "" })
 		a.cta(c, p, locales.WizardConnect()).OnClick(func() { a.startConnect(w) })
@@ -187,7 +188,7 @@ func (a *App) wizardConnecting(c *ui.Context, p palette, w *Wizard) {
 			ui.Text(c, locales.WizardVerifyHint()).FontSize(12).TextColor(p.Faint)
 			return
 		}
-		ui.Icon(c, iconJunk).FontSize(28).TextColor(p.Danger)
+		ui.Icon(c, iconAlert).FontSize(28).TextColor(p.Danger)
 		ui.Text(c, locales.WizardConnectFailed()).FontSize(15).Bold().TextColor(p.Text)
 		ui.Text(c, w.Err).FontSize(12).TextColor(p.Muted).TextAlign(ui.Center).MaxWidth(380)
 		ui.Row(c).Gap(8).Margin(10, 0, 0, 0).Children(func() {

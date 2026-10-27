@@ -17,6 +17,7 @@ import (
 
 	"ccmail/internal/hub"
 	"ccmail/internal/store"
+	"ccmail/locales"
 )
 
 var wsRe = regexp.MustCompile(`\s+`)
@@ -60,7 +61,7 @@ func GetMessage(a *store.Account, mailbox string, uid uint32, markSeen bool) (*F
 			}
 		}
 		if len(raw) == 0 {
-			return errf(502, "邮件拉取失败")
+			return errf(502, "%s", locales.ErrFetchMessage())
 		}
 		m, err := parseRaw(raw, a, mailbox, uid)
 		if err != nil {
@@ -112,7 +113,7 @@ func boolPtr(b bool) *bool { return &b }
 func parseRaw(raw []byte, a *store.Account, mailbox string, uid uint32) (*FullMessage, error) {
 	entity, err := message.Read(bytes.NewReader(raw))
 	if err != nil {
-		return nil, errf(502, "邮件解析失败：%v", err)
+		return nil, errf(502, "%s", locales.ErrParseMessage(err.Error()))
 	}
 	mr := mail.NewReader(entity)
 
@@ -120,7 +121,7 @@ func parseRaw(raw []byte, a *store.Account, mailbox string, uid uint32) (*FullMe
 	subject := mr.Header.Get("Subject")
 	full.Subject = mimeDecode(subject)
 	if full.Subject == "" {
-		full.Subject = "(无主题)"
+		full.Subject = locales.MiscNoSubject()
 	}
 	if froms, err := mr.Header.AddressList("From"); err == nil && len(froms) > 0 {
 		full.From = Addr{Name: froms[0].Name, Email: froms[0].Address}
@@ -207,7 +208,7 @@ func parseRaw(raw []byte, a *store.Account, mailbox string, uid uint32) (*FullMe
 	full.Snippet = strings.TrimSpace(full.Snippet)
 	full.Attachments = attachments
 	if full.From.Email == "" && full.From.Name == "" {
-		full.From = Addr{Name: "未知发件人"}
+		full.From = Addr{Name: locales.MiscUnknownSender()}
 	}
 	return full, nil
 }
@@ -283,7 +284,7 @@ func ResolveAttachment(a *store.Account, mailbox string, uid uint32, attID strin
 		full = fetched
 	}
 	if full == nil {
-		return "", "", "", errf(404, "附件不存在")
+		return "", "", "", errf(404, "%s", locales.ErrAttachmentMissing())
 	}
 	for _, att := range full.Attachments {
 		if att.ID != attID {
@@ -307,7 +308,7 @@ func ResolveAttachment(a *store.Account, mailbox string, uid uint32, attID strin
 			}
 		}
 	}
-	return "", "", "", errf(404, "附件不存在")
+	return "", "", "", errf(404, "%s", locales.ErrAttachmentMissing())
 }
 
 // fetchForce re-parses a message ignoring the on-disk cache.

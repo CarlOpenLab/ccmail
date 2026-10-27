@@ -999,14 +999,14 @@ func (msgs Messages) ComposeSend() string {
 	return Catalog.Format(msgs.locale, "composeSend", nil)
 }
 
-// ComposeSendHint says "⌘ + Enter to send · Drop files to attach"
+// ComposeSendHint says "{mod} + Enter to send · Drop files to attach"
 // in the language the app shows.
-func ComposeSendHint() string { return In(i18n.Locale()).ComposeSendHint() }
+func ComposeSendHint(mod string) string { return In(i18n.Locale()).ComposeSendHint(mod) }
 
-// ComposeSendHint says "⌘ + Enter to send · Drop files to attach"
+// ComposeSendHint says "{mod} + Enter to send · Drop files to attach"
 // in the language of msgs.
-func (msgs Messages) ComposeSendHint() string {
-	return Catalog.Format(msgs.locale, "composeSendHint", nil)
+func (msgs Messages) ComposeSendHint(mod string) string {
+	return Catalog.Format(msgs.locale, "composeSendHint", map[string]any{"mod": mod})
 }
 
 // ComposeBold says "Bold (⌘B)"
@@ -2079,14 +2079,14 @@ func (msgs Messages) SettingsScSearch() string {
 	return Catalog.Format(msgs.locale, "settingsScSearch", nil)
 }
 
-// SettingsScSearchKey says "/ or ⌘K"
+// SettingsScSearchKey says "/ or {mod}K"
 // in the language the app shows.
-func SettingsScSearchKey() string { return In(i18n.Locale()).SettingsScSearchKey() }
+func SettingsScSearchKey(mod string) string { return In(i18n.Locale()).SettingsScSearchKey(mod) }
 
-// SettingsScSearchKey says "/ or ⌘K"
+// SettingsScSearchKey says "/ or {mod}K"
 // in the language of msgs.
-func (msgs Messages) SettingsScSearchKey() string {
-	return Catalog.Format(msgs.locale, "settingsScSearchKey", nil)
+func (msgs Messages) SettingsScSearchKey(mod string) string {
+	return Catalog.Format(msgs.locale, "settingsScSearchKey", map[string]any{"mod": mod})
 }
 
 // SettingsScClose says "Close the reader or a dialog"
@@ -2359,4 +2359,306 @@ func WizardDefaultFrom() string { return In(i18n.Locale()).WizardDefaultFrom() }
 // in the language of msgs.
 func (msgs Messages) WizardDefaultFrom() string {
 	return Catalog.Format(msgs.locale, "wizardDefaultFrom", nil)
+}
+
+// ListLoadingMore says "Loading more…"
+// in the language the app shows.
+func ListLoadingMore() string { return In(i18n.Locale()).ListLoadingMore() }
+
+// ListLoadingMore says "Loading more…"
+// in the language of msgs.
+func (msgs Messages) ListLoadingMore() string {
+	return Catalog.Format(msgs.locale, "listLoadingMore", nil)
+}
+
+// ErrNoImap says "No IMAP server configured for this account"
+// in the language the app shows.
+func ErrNoImap() string { return In(i18n.Locale()).ErrNoImap() }
+
+// ErrNoImap says "No IMAP server configured for this account"
+// in the language of msgs.
+func (msgs Messages) ErrNoImap() string {
+	return Catalog.Format(msgs.locale, "errNoImap", nil)
+}
+
+// ErrConnect says "Cannot connect to the server: {err}"
+// in the language the app shows.
+func ErrConnect(err string) string { return In(i18n.Locale()).ErrConnect(err) }
+
+// ErrConnect says "Cannot connect to the server: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrConnect(err string) string {
+	return Catalog.Format(msgs.locale, "errConnect", map[string]any{"err": err})
+}
+
+// ErrAuth says "Authentication failed: check the address and the password / app password"
+// in the language the app shows.
+func ErrAuth() string { return In(i18n.Locale()).ErrAuth() }
+
+// ErrAuth says "Authentication failed: check the address and the password / app password"
+// in the language of msgs.
+func (msgs Messages) ErrAuth() string {
+	return Catalog.Format(msgs.locale, "errAuth", nil)
+}
+
+// ErrConnectHint says "Cannot reach the server: check the host and port, or your network"
+// in the language the app shows.
+func ErrConnectHint() string { return In(i18n.Locale()).ErrConnectHint() }
+
+// ErrConnectHint says "Cannot reach the server: check the host and port, or your network"
+// in the language of msgs.
+func (msgs Messages) ErrConnectHint() string {
+	return Catalog.Format(msgs.locale, "errConnectHint", nil)
+}
+
+// ErrTLSPrefix says "TLS / certificate error: {err}"
+// in the language the app shows.
+func ErrTLSPrefix(err string) string { return In(i18n.Locale()).ErrTLSPrefix(err) }
+
+// ErrTLSPrefix says "TLS / certificate error: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrTLSPrefix(err string) string {
+	return Catalog.Format(msgs.locale, "errTLSPrefix", map[string]any{"err": err})
+}
+
+// ErrDemo says "The demo account has no IMAP connection"
+// in the language the app shows.
+func ErrDemo() string { return In(i18n.Locale()).ErrDemo() }
+
+// ErrDemo says "The demo account has no IMAP connection"
+// in the language of msgs.
+func (msgs Messages) ErrDemo() string {
+	return Catalog.Format(msgs.locale, "errDemo", nil)
+}
+
+// ErrListMailboxes says "Failed to list mailboxes: {err}"
+// in the language the app shows.
+func ErrListMailboxes(err string) string { return In(i18n.Locale()).ErrListMailboxes(err) }
+
+// ErrListMailboxes says "Failed to list mailboxes: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrListMailboxes(err string) string {
+	return Catalog.Format(msgs.locale, "errListMailboxes", map[string]any{"err": err})
+}
+
+// ErrMailboxMissing says "Mailbox not found: {mailbox}"
+// in the language the app shows.
+func ErrMailboxMissing(mailbox string) string { return In(i18n.Locale()).ErrMailboxMissing(mailbox) }
+
+// ErrMailboxMissing says "Mailbox not found: {mailbox}"
+// in the language of msgs.
+func (msgs Messages) ErrMailboxMissing(mailbox string) string {
+	return Catalog.Format(msgs.locale, "errMailboxMissing", map[string]any{"mailbox": mailbox})
+}
+
+// ErrFetchList says "Failed to load the message list: {err}"
+// in the language the app shows.
+func ErrFetchList(err string) string { return In(i18n.Locale()).ErrFetchList(err) }
+
+// ErrFetchList says "Failed to load the message list: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrFetchList(err string) string {
+	return Catalog.Format(msgs.locale, "errFetchList", map[string]any{"err": err})
+}
+
+// ErrSetFlags says "Failed to update flags: {err}"
+// in the language the app shows.
+func ErrSetFlags(err string) string { return In(i18n.Locale()).ErrSetFlags(err) }
+
+// ErrSetFlags says "Failed to update flags: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrSetFlags(err string) string {
+	return Catalog.Format(msgs.locale, "errSetFlags", map[string]any{"err": err})
+}
+
+// ErrMove says "Failed to move the message: {err}"
+// in the language the app shows.
+func ErrMove(err string) string { return In(i18n.Locale()).ErrMove(err) }
+
+// ErrMove says "Failed to move the message: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrMove(err string) string {
+	return Catalog.Format(msgs.locale, "errMove", map[string]any{"err": err})
+}
+
+// ErrDelete says "Failed to delete the message: {err}"
+// in the language the app shows.
+func ErrDelete(err string) string { return In(i18n.Locale()).ErrDelete(err) }
+
+// ErrDelete says "Failed to delete the message: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrDelete(err string) string {
+	return Catalog.Format(msgs.locale, "errDelete", map[string]any{"err": err})
+}
+
+// ErrExpunge says "Failed to empty the mailbox: {err}"
+// in the language the app shows.
+func ErrExpunge(err string) string { return In(i18n.Locale()).ErrExpunge(err) }
+
+// ErrExpunge says "Failed to empty the mailbox: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrExpunge(err string) string {
+	return Catalog.Format(msgs.locale, "errExpunge", map[string]any{"err": err})
+}
+
+// ErrNoArchive says "No archive mailbox found"
+// in the language the app shows.
+func ErrNoArchive() string { return In(i18n.Locale()).ErrNoArchive() }
+
+// ErrNoArchive says "No archive mailbox found"
+// in the language of msgs.
+func (msgs Messages) ErrNoArchive() string {
+	return Catalog.Format(msgs.locale, "errNoArchive", nil)
+}
+
+// ErrAppendSent says "Failed to save to Sent: {err}"
+// in the language the app shows.
+func ErrAppendSent(err string) string { return In(i18n.Locale()).ErrAppendSent(err) }
+
+// ErrAppendSent says "Failed to save to Sent: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrAppendSent(err string) string {
+	return Catalog.Format(msgs.locale, "errAppendSent", map[string]any{"err": err})
+}
+
+// ErrFetchMessage says "Failed to fetch the message"
+// in the language the app shows.
+func ErrFetchMessage() string { return In(i18n.Locale()).ErrFetchMessage() }
+
+// ErrFetchMessage says "Failed to fetch the message"
+// in the language of msgs.
+func (msgs Messages) ErrFetchMessage() string {
+	return Catalog.Format(msgs.locale, "errFetchMessage", nil)
+}
+
+// ErrParseMessage says "Failed to parse the message: {err}"
+// in the language the app shows.
+func ErrParseMessage(err string) string { return In(i18n.Locale()).ErrParseMessage(err) }
+
+// ErrParseMessage says "Failed to parse the message: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrParseMessage(err string) string {
+	return Catalog.Format(msgs.locale, "errParseMessage", map[string]any{"err": err})
+}
+
+// ErrNoSmtp says "No SMTP server configured for this account"
+// in the language the app shows.
+func ErrNoSmtp() string { return In(i18n.Locale()).ErrNoSmtp() }
+
+// ErrNoSmtp says "No SMTP server configured for this account"
+// in the language of msgs.
+func (msgs Messages) ErrNoSmtp() string {
+	return Catalog.Format(msgs.locale, "errNoSmtp", nil)
+}
+
+// ErrCreds says "Failed to read the account credentials"
+// in the language the app shows.
+func ErrCreds() string { return In(i18n.Locale()).ErrCreds() }
+
+// ErrCreds says "Failed to read the account credentials"
+// in the language of msgs.
+func (msgs Messages) ErrCreds() string {
+	return Catalog.Format(msgs.locale, "errCreds", nil)
+}
+
+// ErrSmtpConnect says "Send failed: cannot connect to SMTP ({err})"
+// in the language the app shows.
+func ErrSmtpConnect(err string) string { return In(i18n.Locale()).ErrSmtpConnect(err) }
+
+// ErrSmtpConnect says "Send failed: cannot connect to SMTP ({err})"
+// in the language of msgs.
+func (msgs Messages) ErrSmtpConnect(err string) string {
+	return Catalog.Format(msgs.locale, "errSmtpConnect", map[string]any{"err": err})
+}
+
+// ErrSmtpAuth says "Send failed: SMTP authentication failed ({err})"
+// in the language the app shows.
+func ErrSmtpAuth(err string) string { return In(i18n.Locale()).ErrSmtpAuth(err) }
+
+// ErrSmtpAuth says "Send failed: SMTP authentication failed ({err})"
+// in the language of msgs.
+func (msgs Messages) ErrSmtpAuth(err string) string {
+	return Catalog.Format(msgs.locale, "errSmtpAuth", map[string]any{"err": err})
+}
+
+// ErrSendPrefix says "Send failed: {err}"
+// in the language the app shows.
+func ErrSendPrefix(err string) string { return In(i18n.Locale()).ErrSendPrefix(err) }
+
+// ErrSendPrefix says "Send failed: {err}"
+// in the language of msgs.
+func (msgs Messages) ErrSendPrefix(err string) string {
+	return Catalog.Format(msgs.locale, "errSendPrefix", map[string]any{"err": err})
+}
+
+// ErrVerifyConnect says "Cannot connect to SMTP ({err})"
+// in the language the app shows.
+func ErrVerifyConnect(err string) string { return In(i18n.Locale()).ErrVerifyConnect(err) }
+
+// ErrVerifyConnect says "Cannot connect to SMTP ({err})"
+// in the language of msgs.
+func (msgs Messages) ErrVerifyConnect(err string) string {
+	return Catalog.Format(msgs.locale, "errVerifyConnect", map[string]any{"err": err})
+}
+
+// ErrVerifyAuth says "SMTP authentication failed ({err})"
+// in the language the app shows.
+func ErrVerifyAuth(err string) string { return In(i18n.Locale()).ErrVerifyAuth(err) }
+
+// ErrVerifyAuth says "SMTP authentication failed ({err})"
+// in the language of msgs.
+func (msgs Messages) ErrVerifyAuth(err string) string {
+	return Catalog.Format(msgs.locale, "errVerifyAuth", map[string]any{"err": err})
+}
+
+// ErrVerify says "SMTP verification failed ({err})"
+// in the language the app shows.
+func ErrVerify(err string) string { return In(i18n.Locale()).ErrVerify(err) }
+
+// ErrVerify says "SMTP verification failed ({err})"
+// in the language of msgs.
+func (msgs Messages) ErrVerify(err string) string {
+	return Catalog.Format(msgs.locale, "errVerify", map[string]any{"err": err})
+}
+
+// WizardAdvancedShow says "Advanced server settings"
+// in the language the app shows.
+func WizardAdvancedShow() string { return In(i18n.Locale()).WizardAdvancedShow() }
+
+// WizardAdvancedShow says "Advanced server settings"
+// in the language of msgs.
+func (msgs Messages) WizardAdvancedShow() string {
+	return Catalog.Format(msgs.locale, "wizardAdvancedShow", nil)
+}
+
+// WizardAdvancedHide says "Hide advanced settings"
+// in the language the app shows.
+func WizardAdvancedHide() string { return In(i18n.Locale()).WizardAdvancedHide() }
+
+// WizardAdvancedHide says "Hide advanced settings"
+// in the language of msgs.
+func (msgs Messages) WizardAdvancedHide() string {
+	return Catalog.Format(msgs.locale, "wizardAdvancedHide", nil)
+}
+
+// ErrAttachmentMissing says "Attachment not found"
+// in the language the app shows.
+func ErrAttachmentMissing() string { return In(i18n.Locale()).ErrAttachmentMissing() }
+
+// ErrAttachmentMissing says "Attachment not found"
+// in the language of msgs.
+func (msgs Messages) ErrAttachmentMissing() string {
+	return Catalog.Format(msgs.locale, "errAttachmentMissing", nil)
+}
+
+// TitlebarSwitchAccount says "Switch to {account}"
+// in the language the app shows.
+func TitlebarSwitchAccount(account string) string {
+	return In(i18n.Locale()).TitlebarSwitchAccount(account)
+}
+
+// TitlebarSwitchAccount says "Switch to {account}"
+// in the language of msgs.
+func (msgs Messages) TitlebarSwitchAccount(account string) string {
+	return Catalog.Format(msgs.locale, "titlebarSwitchAccount", map[string]any{"account": account})
 }

@@ -71,7 +71,7 @@ func (a *App) listPane(c *ui.Context, p palette) {
 			}
 			if a.loadErr != "" {
 				ui.Column(c).Fill().Center().Gap(8).Padding(30).Children(func() {
-					ui.Icon(c, iconJunk).FontSize(28).TextColor(p.Danger)
+					ui.Icon(c, iconAlert).FontSize(28).TextColor(p.Danger)
 					ui.Text(c, locales.ListLoadFailed()).FontSize(14).Bold().TextColor(p.Text)
 					ui.Text(c, a.loadErr).FontSize(12).TextColor(p.Muted).TextAlign(ui.Center)
 					ui.Button(c, locales.MiscRetry()).OnClick(func() { a.reloadList(true) })
@@ -115,8 +115,24 @@ func (a *App) listPane(c *ui.Context, p palette) {
 			a.openRow(a.listSel)
 		}
 
+		// endless scrolling: reaching the bottom of a longer view fetches
+		// the next page without asking
+		if a.wantNextPage() {
+			a.pending = append(a.pending, func() {
+				a.page++
+				a.reloadList(false)
+			})
+		}
+
 		if a.more {
 			ui.Row(c).Padding(6, 10, 10, 10).Justify(ui.Center).Children(func() {
+				if a.loading {
+					ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
+						ui.Spinner(c)
+						ui.Text(c, locales.ListLoadingMore()).FontSize(12).TextColor(p.Faint)
+					})
+					return
+				}
 				ui.Button(c, locales.ListLoadMore(len(a.msgs), a.total)).OnClick(func() {
 					a.page++
 					a.reloadList(false)
@@ -124,6 +140,17 @@ func (a *App) listPane(c *ui.Context, p palette) {
 			})
 		}
 	})
+}
+
+// wantNextPage reports whether the list sits close enough to its bottom to
+// ask for the next page: a row or two of headroom, never while a load is in
+// flight or the last one failed.
+func (a *App) wantNextPage() bool {
+	if !a.more || a.loading || a.loadErr != "" {
+		return false
+	}
+	_, last := a.list.Visible()
+	return last >= 0 && last >= len(a.rows)-3
 }
 
 func (a *App) viewTitle() string {
@@ -254,7 +281,7 @@ func (a *App) listRow(c *ui.Context, p palette, i int) {
 					ui.Text(c, fmtListDate(env.Date)).FontSize(11.5).TextColor(secondary(1))
 				})
 
-				subj := ui.Text(c, env.Subject).FontSize(13.5).SingleLine()
+				subj := ui.Text(c, firstNonEmpty(env.Subject, locales.MiscNoSubject())).FontSize(13.5).SingleLine()
 				if unread {
 					subj.Bold().TextColor(onSel(p.Text, p.SelectedText))
 				} else {

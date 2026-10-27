@@ -127,7 +127,7 @@
   "composePlaceholder": "Write something…",
   "composeToPlaceholder": "name@example.com, separate with commas",
   "composeSend": "Send",
-  "composeSendHint": "⌘ + Enter to send · Drop files to attach",
+  "composeSendHint": "{mod} + Enter to send · Drop files to attach",
   "composeBold": "Bold (⌘B)",
   "composeItalic": "Italic (⌘I)",
   "composeUnderline": "Underline (⌘U)",
@@ -242,7 +242,7 @@
   "settingsScDelete": "Delete",
   "settingsScStar": "Star",
   "settingsScSearch": "Search mail",
-  "settingsScSearchKey": "/ or ⌘K",
+  "settingsScSearchKey": "/ or {mod}K",
   "settingsScClose": "Close the reader or a dialog",
   "settingsScSidebar": "Collapse the sidebar",
   "settingsAboutTagline": "v{version} · Multi-account IMAP / SMTP mail client",
@@ -269,5 +269,175 @@
   "onboardingHint": "Add your first mail account (QQ, Gmail, 163, Outlook, iCloud, or custom IMAP) to start sending and receiving.",
   "miscQuestion": "?",
   "wizardConnectAccount": "Connect account",
-  "wizardDefaultFrom": "Defaults to the email address"
+  "wizardDefaultFrom": "Defaults to the email address",
+  "listLoadingMore": "Loading more…",
+  "errNoImap": "No IMAP server configured for this account",
+  "errConnect": "Cannot connect to the server: {err}",
+  "errAuth": "Authentication failed: check the address and the password / app password",
+  "errConnectHint": "Cannot reach the server: check the host and port, or your network",
+  "errTLSPrefix": "TLS / certificate error: {err}",
+  "errDemo": "The demo account has no IMAP connection",
+  "errListMailboxes": "Failed to list mailboxes: {err}",
+  "errMailboxMissing": "Mailbox not found: {mailbox}",
+  "errFetchList": "Failed to load the message list: {err}",
+  "errSetFlags": "Failed to update flags: {err}",
+  "errMove": "Failed to move the message: {err}",
+  "errDelete": "Failed to delete the message: {err}",
+  "errExpunge": "Failed to empty the mailbox: {err}",
+  "errNoArchive": "No archive mailbox found",
+  "errAppendSent": "Failed to save to Sent: {err}",
+  "errFetchMessage": "Failed to fetch the message",
+  "errParseMessage": "Failed to parse the message: {err}",
+  "errNoSmtp": "No SMTP server configured for this account",
+  "errCreds": "Failed to read the account credentials",
+  "errSmtpConnect": "Send failed: cannot connect to SMTP ({err})",
+  "errSmtpAuth": "Send failed: SMTP authentication failed ({err})",
+  "errSendPrefix": "Send failed: {err}",
+  "errVerifyConnect": "Cannot connect to SMTP ({err})",
+  "errVerifyAuth": "SMTP authentication failed ({err})",
+  "errVerify": "SMTP verification failed ({err})",
+  "wizardAdvancedShow": "Advanced server settings",
+  "wizardAdvancedHide": "Hide advanced settings",
+  "@errTLSPrefix": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errConnect": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errMove": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errExpunge": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errParseMessage": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errFetchList": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errDelete": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errSendPrefix": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errSetFlags": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errAppendSent": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errVerify": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errListMailboxes": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errSmtpConnect": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errSmtpAuth": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errMailboxMissing": {
+    "placeholders": {
+      "mailbox": {
+        "type": "String"
+      }
+    }
+  },
+  "@errVerifyAuth": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "@errVerifyConnect": {
+    "placeholders": {
+      "err": {
+        "type": "String"
+      }
+    }
+  },
+  "errAttachmentMissing": "Attachment not found",
+  "titlebarSwitchAccount": "Switch to {account}",
+  "@titlebarSwitchAccount": {
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "@composeSendHint": {
+    "placeholders": {
+      "mod": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsScSearchKey": {
+    "placeholders": {
+      "mod": {
+        "type": "String"
+      }
+    }
+  }
 }

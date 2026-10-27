@@ -309,7 +309,8 @@ func (a *App) settingsShortcuts(c *ui.Context, p palette) {
 		{"S", locales.MiscStar()},
 		{"E", locales.MiscArchive()},
 		{"⌫", locales.MiscDelete()},
-		{locales.SettingsScSearchKey(), locales.TitlebarSearch()},
+		{modKey() + "B", locales.SettingsScSidebar()},
+		{locales.SettingsScSearchKey(modKey()), locales.TitlebarSearch()},
 		{"Esc", locales.SettingsScClose()},
 		{"?", locales.SettingsOpenShortcuts()},
 	}

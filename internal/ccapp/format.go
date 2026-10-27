@@ -2,6 +2,7 @@ package ccapp
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -10,6 +11,15 @@ import (
 	"ccmail/internal/mailx"
 	"ccmail/locales"
 )
+
+// modKey is the display name of the app's primary modifier: ⌘ on macOS,
+// Ctrl elsewhere.
+func modKey() string {
+	if runtime.GOOS == "darwin" {
+		return "⌘"
+	}
+	return "Ctrl"
+}
 
 func itoa(n int) string { return strconv.Itoa(n) }
 

@@ -95,7 +95,6 @@ type App struct {
 	loadErr       string
 	query         string
 	filter        int
-	filterAt      time.Time
 
 	sel         *MsgRef
 	msg         *mailx.FullMessage
@@ -112,15 +111,11 @@ type App struct {
 	clearAsk    bool
 	compose     *Compose
 	wizard      *Wizard
-	accountsT   int
-	aboutAt     time.Time
 
 	list          ui.ListState
 	listSel       int
 	pendingScroll int
-	listKey       string
 	search        ui.Handle
-	msgBody       ui.ScrollState
 	sidebarW      float32
 	listW         float32
 

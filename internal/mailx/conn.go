@@ -16,6 +16,7 @@ import (
 	"github.com/emersion/go-imap/v2/imapclient"
 
 	"ccmail/internal/store"
+	"ccmail/locales"
 )
 
 // Error is a user-facing mail failure with an HTTP status.
@@ -44,7 +45,7 @@ var (
 
 func dial(server *store.Account) (*imapclient.Client, error) {
 	if server.IMAP == nil {
-		return nil, errf(400, "账号未配置 IMAP 服务器")
+		return nil, errf(400, "%s", locales.ErrNoImap())
 	}
 	host := server.IMAP.Host
 	port := server.IMAP.Port
@@ -62,11 +63,11 @@ func dial(server *store.Account) (*imapclient.Client, error) {
 		client, err = imapclient.DialStartTLS(addr, &imapclient.Options{TLSConfig: tlsCfg})
 	}
 	if err != nil {
-		return nil, errf(502, "无法连接服务器：%s", explain(err))
+		return nil, errf(502, "%s", locales.ErrConnect(explain(err)))
 	}
 	if err := client.Login(server.Auth.User, server.Password()).Wait(); err != nil {
 		client.Close()
-		return nil, errf(400, "认证失败：请检查邮箱地址与密码/授权码是否正确")
+		return nil, errf(400, "%s", locales.ErrAuth())
 	}
 	return client, nil
 }
@@ -75,10 +76,10 @@ func explain(err error) string {
 	msg := err.Error()
 	if netErr := (&net.OpError{}); errors.As(err, &netErr) || strings.Contains(msg, "timeout") ||
 		strings.Contains(msg, "connection refused") || strings.Contains(msg, "no such host") {
-		return "无法连接服务器：请检查服务器地址与端口，或本机网络"
+		return locales.ErrConnectHint()
 	}
 	if strings.Contains(msg, "certificate") || strings.Contains(msg, "tls") {
-		return "TLS/证书错误：" + truncateStr(msg, 100)
+		return locales.ErrTLSPrefix(truncateStr(msg, 100))
 	}
 	return truncateStr(msg, 140)
 }
@@ -93,7 +94,7 @@ func truncateStr(s string, n int) string {
 // withClient runs fn on a kept-alive per-account connection, serialized.
 func withClient(a *store.Account, fn func(c *imapclient.Client) error) error {
 	if a.Type == "demo" {
-		return errf(400, "演示账号没有 IMAP 连接")
+		return errf(400, "%s", locales.ErrDemo())
 	}
 	poolsMu.Lock()
 	p := pools[a.ID]
@@ -154,11 +155,11 @@ func VerifyIMAP(host string, port int, secure bool, user, password string) error
 		client, err = imapclient.DialStartTLS(addr, &imapclient.Options{TLSConfig: tlsCfg})
 	}
 	if err != nil {
-		return errf(400, "无法连接服务器（%s）", explain(err))
+		return errf(400, "%s", locales.ErrConnect(explain(err)))
 	}
 	defer client.Close()
 	if err := client.Login(user, password).Wait(); err != nil {
-		return errf(400, "认证失败：请检查邮箱地址与密码/授权码是否正确")
+		return errf(400, "%s", locales.ErrAuth())
 	}
 	return nil
 }
@@ -214,7 +215,7 @@ func ListMailboxes(a *store.Account) ([]MailboxInfo, error) {
 		})
 		datas, err := cmd.Collect()
 		if err != nil {
-			return errf(502, "读取邮箱列表失败：%s", explain(err))
+			return errf(502, "%s", locales.ErrListMailboxes(explain(err)))
 		}
 		for _, d := range datas {
 			if d.Mailbox == "" {

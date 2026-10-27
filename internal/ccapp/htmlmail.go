@@ -22,7 +22,8 @@ var dropElements = map[atom.Atom]bool{
 	atom.Frame: true, atom.Frameset: true, atom.Applet: true,
 }
 
-// blockElements are the ones a body must not keep inside another element.
+// voidElements are the ones that never take children, so the walker need
+// not descend into them.
 var voidElements = map[atom.Atom]bool{
 	atom.Area: true, atom.Base: true, atom.Br: true, atom.Col: true, atom.Embed: true,
 	atom.Hr: true, atom.Img: true, atom.Input: true, atom.Link: true, atom.Meta: true,

@@ -7,6 +7,7 @@ import (
 	"github.com/emersion/go-imap/v2/imapclient"
 
 	"ccmail/internal/store"
+	"ccmail/locales"
 )
 
 // FlagPatch updates seen/flagged flags.
@@ -28,7 +29,7 @@ func SetFlags(a *store.Account, mailbox string, uids []uint32, patch FlagPatch) 
 	set := uidSet(uids)
 	err := withClient(a, func(c *imapclient.Client) error {
 		if _, err := c.Select(mailbox, nil).Wait(); err != nil {
-			return errf(404, "邮箱不存在：%s", mailbox)
+			return errf(404, "%s", locales.ErrMailboxMissing(mailbox))
 		}
 		for _, p := range []struct {
 			val  *bool
@@ -43,7 +44,7 @@ func SetFlags(a *store.Account, mailbox string, uids []uint32, patch FlagPatch) 
 			}
 			sf := imap.StoreFlags{Op: op, Flags: []imap.Flag{p.flag}, Silent: true}
 			if err := c.Store(set, &sf, nil).Close(); err != nil {
-				return errf(502, "更新标记失败：%s", explain(err))
+				return errf(502, "%s", locales.ErrSetFlags(explain(err)))
 			}
 		}
 		return nil
@@ -78,10 +79,10 @@ func MoveMessages(a *store.Account, from string, uids []uint32, dest string) err
 	set := uidSet(uids)
 	err := withClient(a, func(c *imapclient.Client) error {
 		if _, err := c.Select(from, nil).Wait(); err != nil {
-			return errf(404, "邮箱不存在：%s", from)
+			return errf(404, "%s", locales.ErrMailboxMissing(from))
 		}
 		if _, err := c.Move(set, dest).Wait(); err != nil {
-			return errf(502, "移动失败：%s", explain(err))
+			return errf(502, "%s", locales.ErrMove(explain(err)))
 		}
 		return nil
 	})
@@ -111,13 +112,13 @@ func expunge(a *store.Account, mailbox string, uids []uint32) error {
 	set := uidSet(uids)
 	err := withClient(a, func(c *imapclient.Client) error {
 		if _, err := c.Select(mailbox, nil).Wait(); err != nil {
-			return errf(404, "邮箱不存在：%s", mailbox)
+			return errf(404, "%s", locales.ErrMailboxMissing(mailbox))
 		}
 		if err := c.Store(set, &imap.StoreFlags{Op: imap.StoreFlagsAdd, Flags: []imap.Flag{"\\Deleted"}, Silent: true}, nil).Close(); err != nil {
-			return errf(502, "删除失败：%s", explain(err))
+			return errf(502, "%s", locales.ErrDelete(explain(err)))
 		}
 		if err := c.Expunge().Close(); err != nil {
-			return errf(502, "清理失败：%s", explain(err))
+			return errf(502, "%s", locales.ErrExpunge(explain(err)))
 		}
 		return nil
 	})
@@ -135,7 +136,7 @@ func ArchiveMessages(a *store.Account, mailbox string, uids []uint32) error {
 		box, _ = FindMailboxByKind(a, "all")
 	}
 	if box == nil {
-		return errf(400, "未找到归档邮箱")
+		return errf(400, "%s", locales.ErrNoArchive())
 	}
 	return MoveMessages(a, mailbox, uids, box.Path)
 }
@@ -147,13 +148,13 @@ func AppendToMailbox(a *store.Account, mailbox string, raw []byte) error {
 			Flags: []imap.Flag{"\\Seen"}, Time: time.Now(),
 		})
 		if _, err := cmd.Write(raw); err != nil {
-			return errf(502, "写入已发送失败：%s", explain(err))
+			return errf(502, "%s", locales.ErrAppendSent(explain(err)))
 		}
 		if err := cmd.Close(); err != nil {
-			return errf(502, "写入已发送失败：%s", explain(err))
+			return errf(502, "%s", locales.ErrAppendSent(explain(err)))
 		}
 		if _, err := cmd.Wait(); err != nil {
-			return errf(502, "写入已发送失败：%s", explain(err))
+			return errf(502, "%s", locales.ErrAppendSent(explain(err)))
 		}
 		return nil
 	})
